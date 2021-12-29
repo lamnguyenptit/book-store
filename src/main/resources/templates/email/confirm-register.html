@@ -11,7 +11,7 @@
 <body>
     <div class="container">
         <h3 th:text="${title}"></h3>
-        <p>Thank you for your register. Please click on the link to verify your email address</p>
+        <p th:text="${content}"></p>
         <a th:href="${link}">Verify</a>
     </div>
 </body>

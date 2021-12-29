@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class ConfirmationToken {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private int id;
 
     @Column(nullable = false)
     private String token;
@@ -25,7 +25,7 @@ public class ConfirmationToken {
 
     private LocalDateTime confirmedAt;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(
             nullable = false,
             name = "user_id"
@@ -36,6 +36,14 @@ public class ConfirmationToken {
         this.token = token;
         this.createdAt = createdAt;
         this.expiresAt = expiresAt;
+        this.user = user;
+    }
+
+    public ConfirmationToken(int id, String token, LocalDateTime now, LocalDateTime plusMinutes, User user) {
+        this.id = id;
+        this.token = token;
+        this.createdAt = now;
+        this.expiresAt = plusMinutes;
         this.user = user;
     }
 }

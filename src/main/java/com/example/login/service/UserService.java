@@ -9,6 +9,11 @@ public interface UserService extends UserDetailsService {
 
     String register(User user);
 
-    @Transactional
     String confirmToken(String token);
+
+    String resetPassword(String email);
+
+    boolean confirmRestPassword(String token);
+
+    boolean changePassword(String token, String password);
 }
