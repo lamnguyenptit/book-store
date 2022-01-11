@@ -35,7 +35,7 @@
             </div>
             <div th:each="school, item:*{schools}" class="mb-3">
                 <div th:id="delete-school">
-                    <input type="hidden" th:field="*{schools[__${item.index}__].id}">
+                    <input type="hidden" th:field="*{schools[__${item.index}__].id}" name="id">
                     <p>School
                         <input type="text" th:field="*{schools[__${item.index}__].name}" class="form-control school"
                                placeholder="Name" id="school-name">

@@ -29,7 +29,6 @@ public class User implements UserDetails {
     @Email(message = "Email isn't valid!")
     private String email;
 
-    @Size(min = 3, max = 20, message = "Password must be between 3 and 20 characters")
     private String password;
 
     @Size(max = 50, message = "Name must less than 50 characters")

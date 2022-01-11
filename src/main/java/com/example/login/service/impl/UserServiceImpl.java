@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
 
     private String generateToken(User user) {
         String token = UUID.randomUUID().toString();
-        ConfirmationToken confirmationToken = ConfirmationToken.builder().token(token).confirmedAt(LocalDateTime.now())
+        ConfirmationToken confirmationToken = ConfirmationToken.builder().token(token).createdAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusMinutes(15)).user(user).build();
 //        ConfirmationToken confirmationToken = new ConfirmationToken(
 //                token,
@@ -82,7 +82,7 @@ public class UserServiceImpl implements UserService {
 
     private String updateToken(User user){
         String token = UUID.randomUUID().toString();
-        ConfirmationToken confirmationToken = ConfirmationToken.builder().token(token).confirmedAt(LocalDateTime.now())
+        ConfirmationToken confirmationToken = ConfirmationToken.builder().token(token).createdAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusMinutes(15)).user(user).build();
 //        ConfirmationToken confirmationToken = new ConfirmationToken(
 //                user.getConfirmationToken().getId(),

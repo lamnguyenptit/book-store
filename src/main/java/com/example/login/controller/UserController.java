@@ -47,12 +47,12 @@ public class UserController {
 
     @GetMapping("/register")
     public String viewRegisterPage(Model model){
-        model.addAttribute(new User());
+        model.addAttribute("user", new UserDto());
         return "register";
     }
 
     @PostMapping("/register")
-    public String register(UserDto userDto, Model model) {
+    public String register(@ModelAttribute("user") UserDto userDto, Model model) {
         String msg = userService.register(userDto);
         model.addAttribute("msg", msg);
         return "register";
