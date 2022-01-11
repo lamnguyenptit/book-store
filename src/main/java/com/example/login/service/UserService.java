@@ -1,13 +1,14 @@
 package com.example.login.service;
 
+import com.example.login.model.GooglePojo;
 import com.example.login.model.User;
+import com.example.login.model.dto.UserDto;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.transaction.annotation.Transactional;
 
 public interface UserService extends UserDetailsService {
 //    void updatePassword(User user, String password);
 
-    String register(User user);
+    String register(UserDto userDto);
 
     String confirmToken(String token);
 
@@ -16,4 +17,8 @@ public interface UserService extends UserDetailsService {
     boolean confirmRestPassword(String token);
 
     boolean changePassword(String token, String password);
+
+    void processOAuthPostLogin(GooglePojo googlePojo);
+
+    UserDto findByEmail(String email);
 }

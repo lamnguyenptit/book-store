@@ -1,14 +1,17 @@
 package com.example.login.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-
-@Entity
+@Builder
 @Data
+@Entity
 @NoArgsConstructor
+@AllArgsConstructor
 public class ConfirmationToken {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -31,19 +34,4 @@ public class ConfirmationToken {
             name = "user_id"
     )
     private User user;
-
-    public ConfirmationToken(String token, LocalDateTime createdAt, LocalDateTime expiresAt, User user) {
-        this.token = token;
-        this.createdAt = createdAt;
-        this.expiresAt = expiresAt;
-        this.user = user;
-    }
-
-    public ConfirmationToken(int id, String token, LocalDateTime now, LocalDateTime plusMinutes, User user) {
-        this.id = id;
-        this.token = token;
-        this.createdAt = now;
-        this.expiresAt = plusMinutes;
-        this.user = user;
-    }
 }

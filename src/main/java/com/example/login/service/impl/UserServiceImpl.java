@@ -1,8 +1,10 @@
 package com.example.login.service.impl;
 
 import com.example.login.model.*;
+import com.example.login.model.dto.*;
 import com.example.login.repository.UserRepository;
 import com.example.login.service.*;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,14 +13,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
-    private final static String USER_NOT_FOUND_MSG = "User with email: %s not found";
-
     @Autowired
     private UserRepository userRepository;
 
@@ -34,15 +35,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, email)));
+                .orElseThrow(() -> new UsernameNotFoundException(String.format("User with email: %s not found", email)));
     }
 
     @Override
-    public String register(User param) {
-        if (!emailService.isValid(param.getEmail())) {
+    public String register(UserDto userDto) {
+        if (!emailService.isValid(userDto.getEmail())) {
            return "Email not valid";
         }
-        User user = userRepository.findByEmail(param.getEmail()).orElse(null);
+        User user = userRepository.findByEmail(userDto.getEmail()).orElse(null);
         if (user != null) {
             if (user.isEnabled()) {
                 return "Cannot send your email";
@@ -53,11 +54,12 @@ public class UserServiceImpl implements UserService {
             }
         }
         else {
-            param.setPassword(bCryptPasswordEncoder.encode(param.getPassword()));
-            User user1 = new User(param.getName(), param.getEmail(), param.getPassword(), Role.USER);
-            userRepository.save(user1);
-            String token = generateToken(user1);
-            if (!emailService.sendEmailRegister(user1, token)){
+            userDto.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
+            user = new User(userDto.getName(), userDto.getEmail(), userDto.getPassword(), Role.USER);
+            user.setProvider(Provider.LOCAL);
+            userRepository.save(user);
+            String token = generateToken(user);
+            if (!emailService.sendEmailRegister(user, token)){
                 return "Cannot send your email";
             }
         }
@@ -66,25 +68,29 @@ public class UserServiceImpl implements UserService {
 
     private String generateToken(User user) {
         String token = UUID.randomUUID().toString();
-        ConfirmationToken confirmationToken = new ConfirmationToken(
-                token,
-                LocalDateTime.now(),
-                LocalDateTime.now().plusMinutes(15),
-                user
-        );
+        ConfirmationToken confirmationToken = ConfirmationToken.builder().token(token).confirmedAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(15)).user(user).build();
+//        ConfirmationToken confirmationToken = new ConfirmationToken(
+//                token,
+//                LocalDateTime.now(),
+//                LocalDateTime.now().plusMinutes(15),
+//                user
+//        );
         confirmationTokenService.saveConfirmationToken(confirmationToken);
         return token;
     }
 
     private String updateToken(User user){
         String token = UUID.randomUUID().toString();
-        ConfirmationToken confirmationToken = new ConfirmationToken(
-                user.getConfirmationToken().getId(),
-                token,
-                LocalDateTime.now(),
-                LocalDateTime.now().plusMinutes(15),
-                user
-        );
+        ConfirmationToken confirmationToken = ConfirmationToken.builder().token(token).confirmedAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(15)).user(user).build();
+//        ConfirmationToken confirmationToken = new ConfirmationToken(
+//                user.getConfirmationToken().getId(),
+//                token,
+//                LocalDateTime.now(),
+//                LocalDateTime.now().plusMinutes(15),
+//                user
+//        );
         confirmationTokenService.updateConfirmationToken(confirmationToken);
         return token;
     }
@@ -117,7 +123,7 @@ public class UserServiceImpl implements UserService {
             return "Invalid email";
         }
         User user = userRepository.findByEmail(email).orElse(null);
-        if (user != null) {
+        if (user != null && user.getProvider().equals(Provider.LOCAL)) {
             if (!user.isEnabled())
                 return "Account doesn't exist!";
             String token = updateToken(user);
@@ -161,5 +167,66 @@ public class UserServiceImpl implements UserService {
             return false;
         userRepository.updatePassword(bCryptPasswordEncoder.encode(password), user.getId());
         return true;
+    }
+
+    @Override
+    public void processOAuthPostLogin(GooglePojo googlePojo) {
+        User existUser = userRepository.findByEmail(googlePojo.getEmail()).orElse(null);
+        if (existUser == null) {
+            User newUser = new User();
+            newUser.setEmail(googlePojo.getEmail());
+            newUser.setProvider(Provider.GOOGLE);
+            newUser.setEnabled(true);
+            newUser.setLocked(false);
+            newUser.setRole(Role.USER);
+            newUser.setName(googlePojo.getName());
+            newUser.setImage(googlePojo.getPicture());
+            userRepository.save(newUser);
+        }
+    }
+
+    @Override
+    public UserDto findByEmail(String email){
+        return convertToUserDto(userRepository.findByEmail(email).orElse(null));
+    }
+
+    private UserDto convertToUserDto(User user){
+        if (user == null)
+            return null;
+        UserDto userDto = new UserDto();
+        BeanUtils.copyProperties(user, userDto);
+        if (user.getConfirmationToken() != null){
+            ConfirmationTokenDto confirmationTokenDto = new ConfirmationTokenDto();
+            BeanUtils.copyProperties(user.getConfirmationToken(), confirmationTokenDto);
+            userDto.setConfirmationTokenDto(confirmationTokenDto);
+        }
+        if (user.getSchools() != null) {
+            List<SchoolDto> schoolDtos = new ArrayList<>();
+            for (School school : user.getSchools()) {
+                SchoolDto schoolDto = new SchoolDto();
+                BeanUtils.copyProperties(school, schoolDto);
+                schoolDtos.add(schoolDto);
+            }
+            userDto.setSchools(schoolDtos);
+        }
+        if (user.getCompanies() != null) {
+            List<CompanyDto> companyDtos = new ArrayList<>();
+            for (Company company : user.getCompanies()) {
+                CompanyDto companyDto = new CompanyDto();
+                BeanUtils.copyProperties(company, companyDto);
+                companyDtos.add(companyDto);
+            }
+            userDto.setCompanies(companyDtos);
+        }
+        if (user.getDegrees() != null) {
+            List<DegreeDto> degreeDtos = new ArrayList<>();
+            for (Degree degree : user.getDegrees()) {
+                DegreeDto degreeDto = new DegreeDto();
+                BeanUtils.copyProperties(degree, degreeDto);
+                degreeDtos.add(degreeDto);
+            }
+            userDto.setDegrees(degreeDtos);
+        }
+        return userDto;
     }
 }

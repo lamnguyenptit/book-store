@@ -1,0 +1,20 @@
+
+    <div th:id="delete-school">
+        <p>School
+            <input type="text" th:field="${user.schools[__${indexSchool}__].name}" class="form-control school" placeholder="Name" id="school-name">
+            <span th:if="${#fields.hasErrors('user.schools[__${indexSchool}__].name')}" th:errors="${user.schools[__${indexSchool}__].name}" class="text-danger school"></span>
+        </p>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label>Admission date</label>
+                <input type="date" th:field="${user.schools[__${indexSchool}__].admissionDate}" class="form-control school" id="school-admissionDate">
+                <span th:if="${#fields.hasErrors('user.schools[__${indexSchool}__].admissionDate')}" th:errors="${user.schools[__${indexSchool}__].admissionDate}" class="text-danger school"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label>Graduate date</label>
+                <input type="date" th:field="${user.schools[__${indexSchool}__].graduateDate}" class="form-control school" id="school-graduateDate">
+                <span th:if="${#fields.hasErrors('user.schools[__${indexSchool}__].graduateDate')}" th:errors="${user.schools[__${indexSchool}__].graduateDate}" class="text-danger school"></span>
+            </div>
+        </div>
+        <input type="button" class="btn btn-danger" value="Delete school" onclick="deleteSchoolViaAjax(this)">
+    </div>
