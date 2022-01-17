@@ -1,9 +1,6 @@
 package com.example.login.model.dto;
 
-import com.example.login.model.User;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
@@ -13,7 +10,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class SchoolDto {
@@ -39,5 +37,16 @@ public class SchoolDto {
         this.admissionDate = admissionDate;
         this.graduateDate = graduateDate;
         this.user = user;
+    }
+
+    @Override
+    public String toString() {
+        return "SchoolDto{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", admissionDate=" + admissionDate +
+                ", graduateDate=" + graduateDate +
+                ", user=" + user.getId() +
+                '}';
     }
 }

@@ -1,5 +1,5 @@
 
-    <div th:id="delete-school">
+    <div class="delete-school">
         <p>School
             <input type="text" th:field="${user.schools[__${indexSchool}__].name}" class="form-control school" placeholder="Name" id="school-name">
             <span th:if="${#fields.hasErrors('user.schools[__${indexSchool}__].name')}" th:errors="${user.schools[__${indexSchool}__].name}" class="text-danger school"></span>
@@ -16,5 +16,5 @@
                 <span th:if="${#fields.hasErrors('user.schools[__${indexSchool}__].graduateDate')}" th:errors="${user.schools[__${indexSchool}__].graduateDate}" class="text-danger school"></span>
             </div>
         </div>
-        <input type="button" class="btn btn-danger" value="Delete school" onclick="deleteSchoolViaAjax(this)">
+        <input type="button" th:name="${indexSchool}" class="btn btn-danger school" value="Delete school" onclick="deleteSchoolViaAjax(this)">
     </div>
