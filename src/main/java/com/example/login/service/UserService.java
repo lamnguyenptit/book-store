@@ -5,6 +5,8 @@ import com.example.login.model.User;
 import com.example.login.model.dto.UserDto;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import java.util.List;
+
 public interface UserService extends UserDetailsService {
 //    void updatePassword(User user, String password);
 
@@ -23,4 +25,10 @@ public interface UserService extends UserDetailsService {
     UserDto findByEmail(String email);
 
     void updateUser(UserDto userDto);
+
+    List<User> listAll();
+
+    User getUserById(Integer id);
+
+    void delete(Integer id);
 }
