@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String register(UserDto userDto) {
         if (!emailService.isValid(userDto.getEmail())) {
-           return "Email not valid";
+            return "Email not valid";
         }
         User user = userRepository.findByEmail(userDto.getEmail()).orElse(null);
         if (user != null) {
@@ -313,5 +313,23 @@ public class UserServiceImpl implements UserService {
             user.setDegrees(degrees);
         }
         return user;
+    }
+
+    @Override
+    public List<User> listAll() {
+        return (List<User>) userRepository.findAll();
+    }
+
+    @Override
+    public void delete(Integer id) {
+        Long countById = userRepository.countById(id);
+        if(countById == null || countById == 0) {
+        }
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    public User getUserById(Integer id) {
+        return userRepository.findById(id).get();
     }
 }

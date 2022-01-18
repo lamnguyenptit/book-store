@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+<title>Tìm kiếm</title>
+<link rel="shortcut icon" href="#">
+<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+<script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+
+<body>
+<div class="container-fluid">
+    <div th:replace = "navigation :: header_menu"></div>
+    <div th:replace="navigation :: search_nav"></div>
+    <div>
+        <h1>Danh sách sản phẩm tìm được</h1>
+    </div>
+    <div th:unless="${totalItems > 0}">
+        <h3>Không tìm thấy kết quả phù hợp với '[[${keyword}]]'</h3>
+    </div>
+    <div th:unless="${totalItems < 0}">
+        <h3> Không tìm thấy sản phẩm với từ khóa ' [[${keyword}]]</h3>
+    </div>
+    <div class="row">
+        <div class="col-sm-2" th:each="prod : ${pageProducts}">
+            <div>
+                <img th:src="@{'/product-images/' + ${prod.id} + '/'+ ${prod.image}}" width="80">
+            </div>
+            <div>
+                <a th:href="@{'/p/' + ${prod.id}}">[[${prod.name}]]</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+<div class="container-fluid">
+    <div>
+        <h1>Shopping by Categories</h1>
+    </div>
+    <div class="row">
+        <div class="col-sm-2" th:each="prod : ${listProductByCategory}">
+            <div>
+                <img th:src="@{'/product-images/' + ${prod.id} + '/'+ ${prod.image}}" width="80">
+            </div>
+            <div>
+                <a th:href="@{'/p/' + ${prod.id}}">[[${prod.name}]]</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
