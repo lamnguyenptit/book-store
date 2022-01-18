@@ -12,8 +12,6 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
-
-
     Optional<User> findByEmail(String email);
 
     @Transactional
@@ -24,7 +22,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Transactional
     @Modifying
     @Query("UPDATE User u SET u.enabled = TRUE WHERE u.email = :email")
-    int enableUser(String email);
+    void enableUser(String email);
 
 
     //@Transactional

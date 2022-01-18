@@ -1,17 +1,17 @@
 package com.example.login.service.impl;
 
-import com.example.login.model.School;
-import com.example.login.model.User;
-import com.example.login.model.dto.CompanyDto;
-import com.example.login.model.dto.DegreeDto;
-import com.example.login.model.dto.SchoolDto;
-import com.example.login.model.dto.UserDto;
-import com.example.login.service.ConverterService;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+//import com.example.login.model.School;
+//import com.example.login.model.User;
+//import com.example.login.model.dto.CompanyDto;
+//import com.example.login.model.dto.DegreeDto;
+//import com.example.login.model.dto.SchoolDto;
+//import com.example.login.model.dto.UserDto;
+//import com.example.login.service.ConverterService;
+//import org.springframework.stereotype.Service;
+//
+//import java.util.ArrayList;
+//import java.util.List;
+//import java.util.stream.Collectors;
 
 //@Service
 //public class ConverterServiceImpl implements ConverterService {

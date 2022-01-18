@@ -7,23 +7,26 @@ import com.example.login.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 @Controller
 public class UserController {
@@ -33,16 +36,34 @@ public class UserController {
     @Autowired
     private GoogleService googleService;
 
-    @RequestMapping( "/home")
+    @RequestMapping( "/user/home")
     public String viewMainPage(){
         return "home";
     }
 
-    @GetMapping( "/login")
-    public String viewLoginPage(HttpServletRequest request){
-        if (request.getUserPrincipal() != null)
-            return "redirect:/home";
-        return "login";
+    @RequestMapping( "/admin/home")
+    public String viewMainPageAdmin(){
+        return "adminPage";
+    }
+
+    @GetMapping( "/loginUser")
+    public String viewLoginUserPage(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
+            return "loginUser";
+        if (authentication.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("USER")))
+            return "redirect:/user/home";
+        return "redirect:/admin/home";
+    }
+
+    @GetMapping("/loginAdmin")
+    public String viewAdminLoginPage() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
+            return "loginAdmin";
+        if (authentication.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("USER")))
+            return "redirect:/user/home";
+        return "redirect:/admin/home";
     }
 
     @GetMapping("/register")
@@ -52,7 +73,9 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public String register(@ModelAttribute("user") UserDto userDto, Model model) {
+    public String register(@Valid @ModelAttribute("user") UserDto userDto, Model model, BindingResult bindingResult) {
+        if (bindingResult.hasErrors())
+            return "register";
         String msg = userService.register(userDto);
         model.addAttribute("msg", msg);
         return "register";
@@ -110,7 +133,7 @@ public class UserController {
         String code = request.getParameter("code");
 
         if (code == null || code.isEmpty()) {
-            return "redirect:/login?error";
+            return "redirect:/loginUser?error";
         }
         String accessToken = googleService.getToken(code);
         GooglePojo googlePojo = googleService.getUserInfo(accessToken);
@@ -119,29 +142,48 @@ public class UserController {
                 userDetail.getAuthorities());
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        return "redirect:/home";
+        return "redirect:/user/home";
     }
 
     @GetMapping(path = "/change-profile")
-    public String changeProfile(Model model, HttpServletRequest request) throws ParseException {
+    public String changeProfile(Model model, HttpServletRequest request) {
         UserDto userDto = userService.findByEmail(request.getUserPrincipal().getName());
-        userDto.getSchools().add(new SchoolDto("LAM", new SimpleDateFormat("yyyy-MM-dd").parse("1999-06-06"), new SimpleDateFormat("yyyy-MM-dd").parse("1999-06-06"), userDto));
-        userDto.getSchools().add(new SchoolDto("LAM1", new SimpleDateFormat("yyyy-MM-dd").parse("1999-06-06"), new SimpleDateFormat("yyyy-MM-dd").parse("1999-06-06"), userDto));
         model.addAttribute("user", userDto);
         return "change-profile";
     }
 
     @PostMapping(path = "/change-profile", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public String processChangeProfile(@Valid @ModelAttribute(name = "user") UserDto param, BindingResult bindingResult, Model model, @RequestPart("img")MultipartFile multipartFile) throws IOException {
+        if (param.getSchools() != null){
+            for (SchoolDto schoolDto: param.getSchools()){
+                if (schoolDto.getAdmissionDate().getTime() >= schoolDto.getGraduateDate().getTime()){
+                    String err = "AdmissionDate must less than GraduateDate";
+                    ObjectError error = new ObjectError("dateError", err);
+                    bindingResult.addError(error);
+                    break;
+                }
+            }
+        }
         if (bindingResult.hasErrors()){
             return "change-profile";
         }
-        UserDto userDto = userService.findByEmail(param.getEmail());
         if (!multipartFile.isEmpty()){
-            String imageName = userDto.getId() + multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().length() - 4);
-            String filePath = Paths.get("").toAbsolutePath() + "/src/main/resources/static/images/" + imageName;
-            userDto.setImage("/images/" + imageName);
-            multipartFile.transferTo(Paths.get(filePath));
+            String tail = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().length() - 4);
+            if (tail.equals(".jpg") || tail.equals(".png")){
+                String imageName = param.getId() + tail;
+                String filePath = Paths.get("").toAbsolutePath() + "/target/classes/static/images/";
+                param.setImage("images/" + imageName);
+                if (tail.equals(".jpg"))
+                    Files.deleteIfExists(Paths.get(filePath + param.getId() + ".png"));
+                else
+                    Files.deleteIfExists(Paths.get(filePath + param.getId() + ".jpg"));
+                multipartFile.transferTo(Paths.get(filePath + imageName));
+            }
+            else {
+                String message = "Just accept .jpg or .png file";
+                model.addAttribute("messageFile", message);
+                return "change-profile";
+            }
 //            String filename = StringUtils.cleanPath(multipartFile.getOriginalFilename());
 //            user.setImage(filename);
 //            String uploadDir = "images/" + user.getId();
@@ -152,53 +194,24 @@ public class UserController {
 //            Path filePath = uploadPath.resolve(filename);
 //            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
         }
-        userDto.setId(param.getId());
-        userDto.setName(param.getName());
-        userDto.setPhone(param.getPhone());
-        userDto.setAddress(param.getAddress());
-        if (param.getSchools() != null){
-            userDto.setSchools(param.getSchools());
-            for (SchoolDto school: userDto.getSchools())
-                System.out.println(school);
-        }
-//        if (param.getSchools() != null && user.getSchools() == null)
-//            user.setSchools(new ArrayList<>());
-//        for (int i = user.getSchools().size(); i < param.getSchools().size(); ++i){
-//            user.getSchools().add(param.getSchools().get(i));
-//        }
-        return "redirect:/change-profile";
+        userService.updateUser(param);
+        return "redirect:/user/home";
     }
 
     @RequestMapping("/add-school")
     public String addSchool(Model model, @RequestParam("index") String index){
-//        User user = (User) request.getSession().getAttribute("user");
-//        if (user.getSchools() == null)
-//            user.setSchools(new ArrayList<>());
-//        user.getSchools().add(new School());
-//        model.addAttribute("user", user);
         model.addAttribute("user", new UserDto());
         model.addAttribute("indexSchool", index);
         return "add-school";
     }
 
-//    @RequestMapping("/delete-school")
-//    public String deleteSchool(HttpServletRequest request, Model model){
-//        UserDto userDto = (UserDto) request.getSession().getAttribute("user");
-//        if (userDto.getSchools() != null)
-//            userDto.getSchools().removeAll(userDto.getSchools());
-//        model.addAttribute("user", userDto);
-//        return "add-school";
-//    }
+    @GetMapping("/protectedLinks")
+    public String getAnonymousPage() {
+        return "protectedLinks";
+    }
 
-//    @GetMapping("/home/getImage/{image}")
-//    @ResponseBody
-//    public ResponseEntity<ByteArrayResource> getImage(@PathVariable("image") String image) throws IOException {
-//        if (!image.equals("")){
-//            Path fileName = Paths.get(Paths.get("").toAbsolutePath() + "/src/main/resources/images/", image);
-//            byte[] buffer = Files.readAllBytes(fileName);
-//            ByteArrayResource byteArrayResource = new ByteArrayResource(buffer);
-//            return ResponseEntity.ok().contentType(MediaType.parseMediaType("image/jpg")).body(byteArrayResource);
-//        }
-//        return ResponseEntity.badRequest().build();
-//    }
+    @GetMapping("/403")
+    public String getAccessDeniedPage() {
+        return "/error/403";
+    }
 }
