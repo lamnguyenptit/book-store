@@ -1,10 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>FakeBookShop</title>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="shortcut icon" href="#">
+    <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
 </head>
 <body>
-$END$
+
+<div class="container-fluid">
+    <div th:replace = "navigation :: header_menu"></div>
+    <div th:replace="navigation :: search_nav"></div>
+    <div class="row">
+        <div class="col-sm">
+            <div>
+                <img th:src="@{'/product-images/' + ${productDetail.id} + '/'+ ${productDetail.image}}">
+            </div>
+        </div>
+        <div class="col-sm">
+            <div>
+                <h2>[[${productDetail.name}]]</h2>
+            </div>
+            <div>
+                <span>Nhà xuất bản: [[${productDetail.publisher.name}]]</span>
+            </div>
+            <div>
+                Giá gốc:
+                <span th:if="${productDetail.discountPercent <= 0}">[[${productDetail.price}]] đ</span>
+                <del th:if="${productDetail.discountPercent > 0}"><span>[[${productDetail.price}]] đ</span></del>
+            </div>
+            <div th:if="${productDetail.discountPercent > 0}">
+                Giá khuyến mãi:
+                <span style="font-size: larger; color: darkred;">[[${productDetail.discountPrice}]] đ</span>
+                ([[${productDetail.discountPercent}]] % giảm giá)
+            </div>
+            <div>&nbsp;</div>
+            <div th:utext="${productDetail.description}"></div>
+        </div>
+        <div class="col-sm-2">
+            <div>
+                <span th:if="${productDetail.inStock}" class="text-success"><b>Có sẵn trong kho</b></span>
+                <span th:unless="${productDetail.inStock}" class="text-danger"><b>Không sẵn hàng</b></span>
+            </div>
+            <div class="mt-2">
+                <input type="text" size="5" value="1">
+                <div>Số lượng còn lại: [[${productDetail.quantity}]]</div>
+            </div>
+            <div class="mt-3">
+                <input type="button" value="Thêm vào giỏ hàng" class="btn btn-primary">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div><hr/></div>
+            <div>
+                <h3>Chi tiết sản phẩm</h3>
+            </div>
+            <div th:utext="${productDetail.description}"></div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

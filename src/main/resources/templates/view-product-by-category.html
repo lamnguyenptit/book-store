@@ -1,10 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+<title>Trang chủ</title>
+<link rel="shortcut icon" href="#">
+<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+<script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+
 <body>
-$END$
+<div class="container-fluid">
+    <div th:replace = "navigation :: header_menu"></div>
+    <div th:replace="navigation :: search_nav"></div>
+    <div>
+        <h1>Danh sách sách theo danh mục</h1>
+    </div>
+    <div class="row">
+        <div class="col-sm-2" th:each="prod : ${listProductByCategory}">
+            <div>
+                <img th:src="@{'/product-images/' + ${prod.id} + '/'+ ${prod.image}}" width="80">
+            </div>
+            <div>
+                <a th:href="@{'/p/' + ${prod.id}}">[[${prod.name}]]</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
