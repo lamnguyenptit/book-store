@@ -68,4 +68,5 @@ public class Product extends IdBaseEntity{
         return this.price;
     }
 
+
 }

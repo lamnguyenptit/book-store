@@ -14,13 +14,11 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             + "AND (p.category.id = ?1)")
     Page<Product> listProductByCategory(Integer categoryId, Pageable pageable);
 
-
-//    public Product findByName(Integer id);
     Optional<Product> findById(Integer id);
 
-    @Query(value = "SELECT * FROM product WHERE enabled = true" +
-            "AND MATCH(description) AGAINST (?1)", nativeQuery = true)
-    /*//// value này sẽ là câu lệnh truy vấn trực tiếp??? */
+
+    @Query("SELECT p FROM Product p WHERE p.enabled = true AND " +
+            "p.description like 'chí'")
 
     public Page<Product> search(String keyword, Pageable pageable);
 }

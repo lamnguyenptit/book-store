@@ -50,6 +50,10 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Provider provider;
 
+    public User(Integer id){
+        this.id = id;
+    }
+
     public User(String name, String email, String password, Role role) {
         this.email = email;
         this.password = password;

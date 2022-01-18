@@ -152,20 +152,6 @@
 
     <th:block>
         <script type="text/javascript">
-            function deleteUser(id){
-                $.ajax({
-                    url: "delete/" + id + "/confirm",
-                    method: "GET",
-                    success: function(response){
-                        var deleteUserId = response.userDelete.id;
-                        var content = "Bạn muốn xóa User có id: "+deleteUserId;
-                        // $("#deleteUserId").val(deleteUserId);
-                        $("textarea#deleteUserTextarea").val(content);
-                        $("#deleteUserConfirmModal").modal("show");
-                    }
-                });
-            }
-
 
             $(document).ready(function (){
                 $(".link-delete").on("click",function (e){

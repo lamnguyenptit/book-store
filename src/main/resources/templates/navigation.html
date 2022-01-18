@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org" >
 
 <body>
 <div th:fragment="header_menu">
     <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
-        <a class="navbar-brand" th:href="@{/}">
+        <a class="navbar-brand" th:href="@{/user/home}">
             <img alt="" th:src="@{/site-logo/pictureSmall.png}"/>
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#topNavbar, #searchNavbar">
@@ -21,13 +20,13 @@
                     <a class="nav-link" href="">Đơn hàng</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="">Giỏ hàng</a>
+                    <a class="nav-link" href="/cart">Giỏ hàng</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/change-profile">Tôi</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/logout">Đăng xuất</a>
+                    <a class="nav-link" href="/user_logout">Đăng xuất</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="">Liên hệ</a>

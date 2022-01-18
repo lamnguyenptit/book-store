@@ -31,4 +31,6 @@ public interface UserService extends UserDetailsService {
     User getUserById(Integer id);
 
     void delete(Integer id);
+
+    User getUserByEmail(String userEmail);
 }

@@ -26,5 +26,8 @@ public class Cart extends IdBaseEntity{
     @OneToMany(mappedBy = "cart")
     private List<CartAndProduct> cartAssoc;
 
-
+    @Override
+    public String toString() {
+        return "name name: "+ this.id + this.user.getName();
+    }
 }
