@@ -14,8 +14,12 @@
         <form class="information" method="post" th:object="${user}" th:action="@{/change-profile}" enctype="multipart/form-data">
             <input type="hidden" th:field="*{id}" name="id">
             <div class="mb-3">
-                <img width="100" height="100" alt="Image" th:src="@{*{image}}">
-                <input type="file" name="img" accept="image/png, image/jpeg" multiple="multiple">
+                <img id="image" width="100" height="100" alt="Image" th:src="@{*{image}}">
+                <input type="hidden" th:field="*{image}">
+                <input type="file" name="img" accept="image/png, image/jpeg" multiple="multiple" onchange="chooseFile(this)">
+                <div th:if="${messageFile}">
+                    <span th:text="${messageFile}" class="text-danger"></span>
+                </div>
             </div>
             <div class="mb-3">
                 <input type="email" th:field="*{email}" class="form-control" readonly>
@@ -26,7 +30,7 @@
                 <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></span>
             </div>
             <div class="mb-3">
-                <input type="text" th:field="*{phone}" class="form-control" placeholder="Phone">
+                <input type="tel" size="15" th:field="*{phone}" class="form-control" placeholder="Phone">
                 <span th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="text-danger"></span>
             </div>
             <div class="mb-3">
@@ -34,8 +38,8 @@
                 <span th:if="${#fields.hasErrors('address')}" th:errors="*{address}" class="text-danger"></span>
             </div>
             <div th:each="school, item:*{schools}" class="mb-3">
-                <div th:id="delete-school">
-                    <input type="hidden" th:field="*{schools[__${item.index}__].id}" name="id">
+                <div class="delete-school">
+                    <input type="hidden" th:field="*{schools[__${item.index}__].id}" class="school">
                     <p>School
                         <input type="text" th:field="*{schools[__${item.index}__].name}" class="form-control school"
                                placeholder="Name" id="school-name">
@@ -58,15 +62,18 @@
                                   th:errors="*{schools[__${item.index}__].graduateDate}" class="text-danger school"></span>
                         </div>
                     </div>
-                    <input type="button" class="btn btn-danger" value="Delete school" onclick="deleteSchoolViaAjax(this)">
+                    <input type="button" th:name="${item.index}" class="btn btn-danger school" value="Delete school" onclick="deleteSchoolViaAjax(this)">
                 </div>
             </div>
-            <input type="hidden" id="index" th:value="${user.schools.size()}">
             <div id="ajax-add-school"></div>
+            <input type="hidden" id="index" th:value="${user.schools.size()}">
+            <div th:if="${#fields.hasErrors('global')}" class="text-danger">
+                <div th:each="err : ${#fields.errors('global')}" th:text="${err}" class="text-danger"></div>
+            </div>
             <div style="text-align: center"><input type="button" class="btn btn-success" value="Add school" onclick="addSchoolViaAjax()"></div>
             <div><input type="submit" value="Change profile" class="btn btn-primary"/></div>
             <br>
-            <a class="btn btn-primary" th:href="@{/home}">Back</a>
+            <a class="btn btn-primary" th:href="@{/user/home}">Back</a>
         </form>
     </div>
 </div>
@@ -75,6 +82,16 @@
         integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
 <script type="text/javascript">
+    function chooseFile(fileInput) {
+        if (fileInput.files && fileInput.files[0]) {
+            var fileReader = new FileReader()
+            fileReader.onload = function (e) {
+                document.getElementById("image").src = e.target.result
+            }
+            fileReader.readAsDataURL(fileInput.files[0])
+        }
+    }
+
     function addSchoolViaAjax() {
         var index = $("#index").val()
         $.ajax({
@@ -98,8 +115,9 @@
     function deleteSchoolViaAjax(e){
         var index = $("#index").val()
         $("#index").val(--index)
-        e.parentElement.remove()
+        var currentIndex = e.name
         var elements = document.getElementsByClassName("school")
+        e.parentElement.remove()
         for (let i = 0; i < elements.length; ++i) {
             let name = elements[i].name
             let num = 0, le = ""
@@ -109,8 +127,10 @@
                     le += name.charAt(j)
                 }
             }
-            --num;
-            elements[i].name = name.replace(le, String(num))
+            if (num > currentIndex){
+                --num;
+                elements[i].name = name.replace(le, String(num))
+            }
         }
     }
 </script>

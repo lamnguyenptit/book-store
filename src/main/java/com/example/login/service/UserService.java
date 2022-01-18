@@ -18,7 +18,9 @@ public interface UserService extends UserDetailsService {
 
     boolean changePassword(String token, String password);
 
-    void processOAuthPostLogin(GooglePojo googlePojo);
+    User processOAuthPostLogin(GooglePojo googlePojo);
 
     UserDto findByEmail(String email);
+
+    void updateUser(UserDto userDto);
 }

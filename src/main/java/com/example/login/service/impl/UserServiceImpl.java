@@ -32,6 +32,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private ConfirmationTokenService confirmationTokenService;
 
+    @Autowired
+    private SchoolService schoolService;
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email)
@@ -170,7 +173,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void processOAuthPostLogin(GooglePojo googlePojo) {
+    public User processOAuthPostLogin(GooglePojo googlePojo) {
         User existUser = userRepository.findByEmail(googlePojo.getEmail()).orElse(null);
         if (existUser == null) {
             User newUser = new User();
@@ -183,11 +186,47 @@ public class UserServiceImpl implements UserService {
             newUser.setImage(googlePojo.getPicture());
             userRepository.save(newUser);
         }
+        return existUser;
     }
 
     @Override
     public UserDto findByEmail(String email){
         return convertToUserDto(userRepository.findByEmail(email).orElse(null));
+    }
+
+    @Override
+    public void updateUser(UserDto userDto) {
+        User param = convertToUser(userDto);
+        User user = userRepository.findByEmail(param.getEmail()).orElse(null);
+        if (user == null)
+            return;
+        user.setId(param.getId());
+        user.setName(param.getName());
+        user.setPhone(param.getPhone());
+        user.setAddress(param.getAddress());
+        if (param.getImage() != null && !param.getImage().equals(user.getImage()))
+            user.setImage(param.getImage());
+        if (param.getSchools() != null){
+            if (user.getSchools() != null){
+                for (School school: param.getSchools()){
+                    school.setUser(user);
+                }
+            }
+            user.getSchools().clear();
+            param.getSchools().forEach(user.getSchools()::add);
+        }
+        else
+            schoolService.deleteAllByUser(user.getId());
+//        User test = new User();
+//        test.setEmail("lam");
+//        test.setName("Lam");
+//        test.setPassword("$2a$10$q1IOTSOXqGMvHOV0ooDupezSTgcZ22DvKX.Ade/OdgFdiW4Zfs6Bm");
+//        test.setRole(Role.ADMIN);
+//        test.setLocked(false);
+//        test.setProvider(Provider.LOCAL);
+//        test.setEnabled(true);
+//        userRepository.save(test);
+        userRepository.saveAndFlush(user);
     }
 
     private UserDto convertToUserDto(User user){
@@ -205,6 +244,7 @@ public class UserServiceImpl implements UserService {
             for (School school : user.getSchools()) {
                 SchoolDto schoolDto = new SchoolDto();
                 BeanUtils.copyProperties(school, schoolDto);
+                schoolDto.setUser(userDto);
                 schoolDtos.add(schoolDto);
             }
             userDto.setSchools(schoolDtos);
@@ -214,6 +254,7 @@ public class UserServiceImpl implements UserService {
             for (Company company : user.getCompanies()) {
                 CompanyDto companyDto = new CompanyDto();
                 BeanUtils.copyProperties(company, companyDto);
+                companyDto.setUser(userDto);
                 companyDtos.add(companyDto);
             }
             userDto.setCompanies(companyDtos);
@@ -223,10 +264,54 @@ public class UserServiceImpl implements UserService {
             for (Degree degree : user.getDegrees()) {
                 DegreeDto degreeDto = new DegreeDto();
                 BeanUtils.copyProperties(degree, degreeDto);
+                degreeDto.setUser(userDto);
                 degreeDtos.add(degreeDto);
             }
             userDto.setDegrees(degreeDtos);
         }
         return userDto;
+    }
+
+    private User convertToUser(UserDto userDto) {
+        if (userDto == null)
+            return null;
+        User user = new User();
+        BeanUtils.copyProperties(userDto, user);
+        if (userDto.getConfirmationTokenDto() != null){
+            ConfirmationToken confirmationToken = new ConfirmationToken();
+            BeanUtils.copyProperties(userDto.getConfirmationTokenDto(), confirmationToken);
+            user.setConfirmationToken(confirmationToken);
+        }
+        if (userDto.getSchools() != null) {
+            List<School> schools = new ArrayList<>();
+            for (SchoolDto schoolDto : userDto.getSchools()) {
+                School school = new School();
+                BeanUtils.copyProperties(schoolDto, school);
+                school.setUser(user);
+                schools.add(school);
+            }
+            user.setSchools(schools);
+        }
+        if (userDto.getCompanies() != null) {
+            List<Company> companies = new ArrayList<>();
+            for (CompanyDto companyDto : userDto.getCompanies()) {
+                Company company = new Company();
+                BeanUtils.copyProperties(companyDto, company);
+                company.setUser(user);
+                companies.add(company);
+            }
+            user.setCompanies(companies);
+        }
+        if (userDto.getDegrees() != null) {
+            List<Degree> degrees = new ArrayList<>();
+            for (DegreeDto degreeDto : userDto.getDegrees()) {
+                Degree degree = new Degree();
+                BeanUtils.copyProperties(degreeDto, degree);
+                degree.setUser(user);
+                degrees.add(degree);
+            }
+            user.setDegrees(degrees);
+        }
+        return user;
     }
 }

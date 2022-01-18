@@ -13,20 +13,14 @@ import java.nio.file.Paths;
 public class MvcConfig implements WebMvcConfigurer {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/").setViewName("home");
+        registry.addViewController("/user").setViewName("home");
+        registry.addViewController("/admin").setViewName("adminPage");
+//        registry.addViewController("/login").setViewName("login");
     }
 
 //    @Override
 //    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-//        exposeDirectory("images", registry);
-//    }
-//
-//    private void exposeDirectory(String dirName, ResourceHandlerRegistry registry) {
-//        Path uploadDir = Paths.get(dirName);
-//        String uploadPath = uploadDir.toFile().getAbsolutePath();
-//
-//        if (dirName.startsWith("../")) dirName = dirName.replace("../", "");
-//
-//        registry.addResourceHandler("/" + dirName + "/**").addResourceLocations("file:/"+ uploadPath + "/");
+//        registry.addResourceHandler("/images/**").addResourceLocations("file:images/");
+//        registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
 //    }
 }

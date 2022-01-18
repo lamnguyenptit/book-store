@@ -18,7 +18,7 @@ public class MyAccessDeniedHandler implements AccessDeniedHandler {
     private static final Logger logger = LoggerFactory.getLogger(MyAccessDeniedHandler.class);
 
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             logger.info("User '" + auth.getName() + "' attempted to access the protected URL: " + request.getRequestURI());
