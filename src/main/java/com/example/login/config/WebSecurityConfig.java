@@ -61,7 +61,7 @@ public class WebSecurityConfig{
                         .loginPage("/loginAdmin")
                         .loginProcessingUrl("/admin_login")
                         .failureUrl("/loginAdmin?error")
-                        .defaultSuccessUrl("/admin/home")
+                        .defaultSuccessUrl("/admin/home", true)
                         .permitAll()
 
                         .and()
@@ -112,7 +112,7 @@ public class WebSecurityConfig{
                         .loginPage("/loginUser")
                         .loginProcessingUrl("/user_login")
                         .failureUrl("/loginUser?error")
-                        .defaultSuccessUrl("/user/home")
+                        .defaultSuccessUrl("/user/home", true)
                         .permitAll()
 
                         .and()
