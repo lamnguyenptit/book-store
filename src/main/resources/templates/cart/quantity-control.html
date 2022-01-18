@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="quantity_control(quantityValue, productId)">
+    <div class="center">
+        <div class="input-group">
+          <span class="input-group-btn">
+              <a class="btn btn-danger btn-number"  data-type="minus" data-field="quant[2]" th:pid="${productId}">
+                <span class="glyphicon glyphicon-minus"></span>
+              </a>
+          </span>
+        <input type="text" name="quant[2]" class="form-control input-number" th:value="${quantityValue}"
+               th:id="'quantity'+ ${productId}">
+        <span class="input-group-btn">
+              <a class="btn btn-success btn-number linkPlus" data-type="plus" data-field="quant[2]" th:pid="${productId}">
+                  <span class="glyphicon glyphicon-plus"></span>
+              </a>
+          </span>
+    </div>
+        <p></p>
+    </div>
+</div>
+</body>
+</html>

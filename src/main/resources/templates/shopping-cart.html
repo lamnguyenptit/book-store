@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>FakeBookShop</title>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="shortcut icon" href="#">
+    <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+</head>
+<body>
+<div class="container-fluid">
+    <div th:replace = "navigation :: header_menu"></div>
+    <div th:replace="navigation :: search_nav"></div>
+
+    <div class="text-center">
+        <h2>Giỏ hàng của bạn</h2>
+    </div>
+
+<!--    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">-->
+<!--    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>-->
+<!--    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>-->
+<!--    &lt;!&ndash;&#45;&#45;&#45;&#45; Include the above in your HEAD tag &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&ndash;&gt;-->
+
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 col-md-10 col-md-offset-1">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Số lượng</th>
+                        <th class="text-center">Giá</th>
+                        <th class="text-center">Tổng tiền</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+<!--                    <tr>-->
+<!--                        <td class="col-sm-8 col-md-6">-->
+<!--                            <div class="media">-->
+<!--                                <a class="thumbnail pull-left" href="#">-->
+<!--                                    <img class="media-object" th:src="@{'/product-images/' + ${item.productId} + '/'+ ${item.productImage}}"-->
+<!--                                         style="width: 72px; height: 72px;">-->
+<!--                                </a>-->
+<!--                                <div class="media-body">-->
+<!--                                    <h4 class="media-heading"><a href="#" th:text="${item.productName}"></a></h4>-->
+<!--                                    <h5 class="media-heading"> by <a href="#" th:text="${item.publisherName}"></a></h5>-->
+<!--                                    <span th:if="${item.inStock == true}">Status:<span class="text-success"><strong>In Stock</strong></span></span>-->
+<!--                                    <span th:if="${item.inStock == false}">Status:<span class="text-success"><strong>Không còn trong kho</strong></span></span>-->
+<!--                                </div>-->
+<!--                            </div></td>-->
+<!--                        <td class="col-sm-1 col-md-1" style="text-align: center">-->
+<!--                            <input type="email" class="form-control" id="exampleInputEmail1" value="3">-->
+<!--                        </td>-->
+<!--                        <td class="col-sm-1 col-md-1 text-center"><strong>$4.87</strong></td>-->
+<!--                        <td class="col-sm-1 col-md-1 text-center"><strong>$14.61</strong></td>-->
+<!--                        <td class="col-sm-1 col-md-1">-->
+<!--                            <button type="button" class="btn btn-danger">-->
+<!--                                <span class="glyphicon glyphicon-remove"></span> Remove-->
+<!--                            </button></td>-->
+<!--                    </tr>-->
+                    <tr th:each="item : ${listProductByUserCart}">
+                        <td class="col-md-6">
+                            <div class="media">
+                                <a class="thumbnail pull-left" href="#">
+                                    <img class="media-object" th:src="@{'/product-images/' + ${item.productId} + '/'+ ${item.productImage}}"
+                                         style="width: 72px; height: 72px;">
+                                </a>
+                                <div class="media-body">
+                                    <h4 class="media-heading"><a href="#" th:text="${item.productName}"></a></h4>
+                                    <h5 class="media-heading"> by <a href="#" th:text="${item.pulisherName}"></a></h5>
+                                    <span th:if="${item.checkInStock == 1}">Trạng thái:<span class="text-success"><strong>Có sẵn</strong></span></span>
+                                    <span th:if="${item.checkInStock == -1}">Trạng thái:<span class="text-success"><strong>Hết hàng</strong></span></span>
+                                    <span th:if="${item.checkInStock == 0}">Trạng thái:<span class="text-success"><strong>Số lượng đặt vượt quá số lượng trong kho</strong></span></span>
+                                </div>
+                            </div></td>
+                        <td class="col-md-1" style="text-align: center">
+                            <input type="email" class="form-control" id="exampleInputEmail1" th:value="${item.quantity}">
+                        </td>
+                        <td class="col-md-1 text-center"><strong th:text="${item.productPrice} + 'đ'"></strong></td>
+                        <td class="col-md-1 text-center"><strong th:text="${item.subTotal} + 'đ'"></strong></td>
+                        <td class="col-md-1">
+                            <button type="button" class="btn btn-danger">
+                                <span class="glyphicon glyphicon-remove"></span> Remove
+                            </button></td>
+                    </tr>
+                    <tr>
+                        <td>   </td>
+                        <td>   </td>
+                        <td>   </td>
+                        <td><h3>Tổng tiền</h3></td>
+                        <td class="text-right"><h3><strong th:text="${totalMoney}"></strong></h3></td>
+                    </tr>
+                    <tr>
+                        <td>   </td>
+                        <td>   </td>
+                        <td>   </td>
+                        <td>
+                            <button type="button" class="btn btn-default">
+                                <span class="glyphicon glyphicon-shopping-cart"></span> Continue Shopping
+                            </button></td>
+                        <td>
+                            <button type="button" class="btn btn-success">
+                                Checkout <span class="glyphicon glyphicon-play"></span>
+                            </button></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+</div>
+</body>
+</html>

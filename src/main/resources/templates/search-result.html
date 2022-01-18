@@ -15,9 +15,6 @@
     <div>
         <h1>Danh sách sản phẩm tìm được</h1>
     </div>
-    <div th:unless="${totalItems > 0}">
-        <h3>Không tìm thấy kết quả phù hợp với '[[${keyword}]]'</h3>
-    </div>
     <div th:unless="${totalItems < 0}">
         <h3> Không tìm thấy sản phẩm với từ khóa ' [[${keyword}]]</h3>
     </div>
