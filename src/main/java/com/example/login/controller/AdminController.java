@@ -44,25 +44,4 @@ public class AdminController {
         model.addAttribute("listUsers", listUsers);
         return "/admin/list-all-users";
     }
-
-/*////old code */
-//    @GetMapping("/delete/{id}/confirm")
-//    @ResponseBody
-//    public Map<String,User> confirmDeleteUser(@PathVariable ("id")  Integer idUser, Model model){
-//        User userDelete = userService.getUserById(idUser);
-//        model.addAttribute("userDelete", userDelete);
-//
-//        Map<String,User> userDeleteMap = new HashMap<>();
-//        userDeleteMap.put("userDelete",userDelete);
-//        return userDeleteMap;
-//    }
-/*////\ end old code  */
-
-//    @GetMapping("/users/delete/{id}")
-//    public String deleteUser(@PathVariable(name = "id") Integer id, RedirectAttributes redirectAttributes) {
-//        userService.delete(id);
-//        redirectAttributes.addFlashAttribute("message", "Người dùng với ID " + id + " đã được xóa thành công!");
-//        return "redirect:/users";
-//
-//    }
 }
