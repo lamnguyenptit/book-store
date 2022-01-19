@@ -68,5 +68,18 @@ public class Product extends IdBaseEntity{
         return this.price;
     }
 
-
+    public Product(String name, Float cost, Date createTime, Float discountPercent, boolean enabled, String description, String image, boolean inStock, int quantity, Float price, Category category, Publisher publisher) {
+        this.name = name;
+        this.cost = cost;
+        this.createTime = createTime;
+        this.discountPercent = discountPercent;
+        this.enabled = enabled;
+        this.description = description;
+        this.image = image;
+        this.inStock = inStock;
+        this.quantity = quantity;
+        this.price = price;
+        this.category = category;
+        this.publisher = publisher;
+    }
 }

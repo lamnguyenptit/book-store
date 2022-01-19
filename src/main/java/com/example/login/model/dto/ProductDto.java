@@ -6,9 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.util.Date;
 
 @Getter
@@ -22,17 +20,14 @@ public class ProductDto {
     @NotBlank(message = "Name can't empty")
     private String name;
 
-    @Pattern(regexp = "^[\\d]*$", message = "Cost must be digits")
-    @Size(min = 1, max = 20, message = "Cost must between 1 and 20 characters")
-    @NotBlank(message = "Cost can't empty")
+    @Digits(integer = 10, fraction = 5, message = "Cost must be float")
     private Float cost;
 
     private Date createTime;
 
     private Date updateTime;
 
-    @Pattern(regexp = "^[\\d]*$", message = "Discount percent must be digits")
-    @Size(min = 1, max = 2, message = "Discount percent must < 100")
+    @Digits(integer = 10, fraction = 5, message = "Discount percent must be float")
     private Float discountPercent;
 
     private boolean enabled;
@@ -44,14 +39,10 @@ public class ProductDto {
 
     private boolean inStock;
 
-    @Pattern(regexp = "^[\\d]*$", message = "Cost must be digits")
-    @Size(min = 1, max = 9, message = "Cost must between 1 and 9 characters")
-    @NotBlank(message = "Quantity can't empty")
+    @Digits(integer = 10, fraction = 0, message = "Quantity must be digits")
     private int quantity;
 
-    @Pattern(regexp = "^[\\d]*$", message = "Cost must be digits")
-    @Size(min = 1, max = 20, message = "Cost must between 1 and 20 characters")
-    @NotBlank(message = "Price can't empty")
+    @Digits(integer = 10, fraction = 5, message = "Cost must be float")
     private Float price;
 
     @Valid

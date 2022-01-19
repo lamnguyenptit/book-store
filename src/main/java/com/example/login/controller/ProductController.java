@@ -8,6 +8,7 @@ import com.example.login.service.CategoryService;
 import com.example.login.service.ProductService;
 import com.example.login.service.PublisherService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -26,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 public class ProductController {
@@ -57,27 +60,28 @@ public class ProductController {
         return "admin/add-product";
     }
 
-    @PostMapping("/admin/add-product")
-    public String processAddProduct(BindingResult bindingResult, Model model, @ModelAttribute(name = "product")ProductDto productDto, @RequestPart("img") MultipartFile multipartFile) throws IOException {
+    @PostMapping(path = "/admin/add-product", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public String processAddProduct(@Valid @ModelAttribute(name = "product")ProductDto productDto,BindingResult bindingResult, Model model, @RequestPart("img") MultipartFile multipartFile) throws IOException {
         if (bindingResult.hasErrors()){
             return "admin/add-product";
         }
-        System.out.println(productDto);
         if (!multipartFile.isEmpty()) {
             String tail = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().length() - 4);
             if (tail.equals(".jpg") || tail.equals(".png")) {
-                String imageName = productDto.getId() + tail;
-                String filePath = Paths.get("").toAbsolutePath() + "/target/classes/static/images/";
-                productDto.setImage("images/" + imageName);
-                multipartFile.transferTo(Paths.get(filePath + imageName));
+                String imageName = UUID.randomUUID() + ".jpg";
+                String filePath1 = Paths.get("").toAbsolutePath() + "/target/classes/static/product-images/";
+                String filePath2 = Paths.get("").toAbsolutePath() + "/src/main/resources/static/product-images/";
+                productDto.setImage(imageName);
+                multipartFile.transferTo(Paths.get(filePath1 + imageName));
+                multipartFile.transferTo(Paths.get(filePath2 + imageName));
             } else {
                 String message = "Just accept .jpg or .png file";
                 model.addAttribute("messageFile", message);
                 return "admin/add-product";
             }
         }
-        System.out.println(Float.MAX_VALUE);
         productDto.setCreateTime(Timestamp.valueOf(LocalDateTime.now()));
-        return "admin/add-product";
+        productService.createProduct(productDto);
+        return "redirect:/admin/add-product";
     }
 }

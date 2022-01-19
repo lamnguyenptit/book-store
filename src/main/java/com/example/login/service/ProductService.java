@@ -17,4 +17,6 @@ public interface ProductService {
     Page<Product> searchProduct(String keyword);
 
     List<ProductDto> findAllProduct();
+
+    void createProduct(ProductDto productDto);
 }

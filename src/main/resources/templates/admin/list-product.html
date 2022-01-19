@@ -39,7 +39,7 @@
                 <td th:utext="${product.discountPercent}"></td>
                 <td th:utext="${product.enabled}"></td>
                 <td th:utext="${product.description}"></td>
-                <td><img width="100" height="100" alt="image" th:src="@{'/product-images/' + ${product.id} + '/'+ ${product.image}}"></td>
+                <td><img width="100" height="100" alt="image" th:src="@{'/product-images/' + ${product.image}}"></td>
                 <td th:utext="${product.inStock}"></td>
                 <td th:utext="${product.quantity}"></td>
                 <td th:utext="${product.price}"></td>

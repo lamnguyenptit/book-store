@@ -1,7 +1,9 @@
 package com.example.login.service.impl;
 
 import com.example.login.error.ProductNotFoundException;
+import com.example.login.model.Category;
 import com.example.login.model.Product;
+import com.example.login.model.Publisher;
 import com.example.login.model.dto.CategoryDto;
 import com.example.login.model.dto.ProductDto;
 import com.example.login.model.dto.PublisherDto;
@@ -48,6 +50,16 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductDto> findAllProduct(){
         return convertToDtos(repo.findAll());
+    }
+
+    @Override
+    public void createProduct(ProductDto productDto) {
+        Category category = new Category();
+        BeanUtils.copyProperties(productDto.getCategory(), category);
+        Publisher publisher = new Publisher();
+        BeanUtils.copyProperties(productDto.getPublisher(), publisher);
+        Product product = new Product(productDto.getName(), productDto.getCost(), productDto.getCreateTime(), productDto.getDiscountPercent(), productDto.isEnabled(), productDto.getDescription(), productDto.getImage(), productDto.isInStock(), productDto.getQuantity(), productDto.getPrice(), category, publisher);
+        repo.save(product);
     }
 
     public ProductDto convertToDto(Product product){
