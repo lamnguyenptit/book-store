@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>List product</title>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="shortcut icon" href="#">
+</head>
+<body>
+<div th:replace="admin/fragment :: header_menu"></div>
+<h1 style="text-align: center">Add product</h1>
+<div class="container">
+    <form class="information" method="post" th:object="${product}" th:action="@{/admin/add-product}" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label>Image:</label>
+            <img id="image" width="100" height="100" alt="...">
+            <input type="file" name="img" accept="image/png, image/jpeg" multiple="multiple" onchange="chooseFile(this)">
+            <div th:if="${messageFile}"><span th:text="${messageFile}" class="text-danger"></span></div>
+        </div>
+        <div class="mb-3">
+            <label>Name</label>
+            <input type="text" th:field="*{name}" class="form-control">
+            <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label>Enable:</label>
+            <span>
+                <input type="radio" class="form-check-input" name="enabled" id="enabled1" value="true" checked>
+                <label class="form-check-label" for="enabled1">True</label>
+            </span>
+            <span>
+                <input type="radio" class="form-check-input" name="enabled" id="enabled2" value="false">
+                <label class="form-check-label" for="enabled2">False</label>
+            </span>
+        </div>
+        <div class="mb-3">
+            <label>In stock:</label>
+            <span>
+                <input type="radio" class="form-check-input" name="inStock" id="inStock1" value="true" checked>
+                <label class="form-check-label" for="inStock1">True</label>
+            </span>
+            <span>
+                <input type="radio" class="form-check-input" name="inStock" id="inStock2" value="false">
+                <label class="form-check-label" for="inStock2">False</label>
+            </span>
+        </div>
+        <div class="mb-3">
+            <label>Cost</label>
+            <input type="text" th:field="*{cost}" class="form-control">
+            <span th:if="${#fields.hasErrors('cost')}" th:errors="*{cost}" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label>Price</label>
+            <input type="text" th:field="*{price}" class="form-control">
+            <span th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label>Discount percent</label>
+            <input type="text" size="15" th:field="*{discountPercent}" class="form-control">
+            <span th:if="${#fields.hasErrors('discountPercent')}" th:errors="*{discountPercent}" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label>Category</label>
+            <select class="form-select" aria-label="Default select example" th:field="*{category.id}">
+                <option th:each="category:${category}" th:value="${category.id}" th:utext="${category.name}"></option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label>Publisher</label>
+            <select class="form-select" aria-label="Default select example" th:field="*{publisher.id}">
+                <option th:each="publisher:${publisher}" th:value="${publisher.id}" th:utext="${publisher.name}"></option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label>Quantity</label>
+            <input type="text" th:field="*{quantity}" class="form-control">
+            <span th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label>Description</label>
+            <textarea rows="5" th:field="*{description}" class="form-control"></textarea>
+            <span th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="text-danger"></span>
+        </div>
+        <div><input class="btn btn-primary" type="submit" value="Add product"></div>
+        <br>
+        <a class="btn btn-primary" th:href="@{redirect:/admin/product}">Back</a>
+    </form>
+    <div th:replace="admin/fragment :: footer_menu"></div>
+</div>
+<script>
+    function chooseFile(fileInput) {
+        if (fileInput.files && fileInput.files[0]) {
+            var fileReader = new FileReader()
+            fileReader.onload = function (e) {
+                document.getElementById("image").src = e.target.result
+            }
+            fileReader.readAsDataURL(fileInput.files[0])
+        }
+    }
+</script>
+</body>
+</html>

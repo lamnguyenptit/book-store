@@ -41,26 +41,11 @@ public class UserController {
         return "home";
     }
 
-    @RequestMapping( "/admin/home")
-    public String viewMainPageAdmin(){
-        return "adminPage";
-    }
-
     @GetMapping( "/loginUser")
     public String viewLoginUserPage(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
             return "loginUser";
-        if (authentication.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("USER")))
-            return "redirect:/user/home";
-        return "redirect:/admin/home";
-    }
-
-    @GetMapping("/loginAdmin")
-    public String viewAdminLoginPage() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
-            return "loginAdmin";
         if (authentication.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("USER")))
             return "redirect:/user/home";
         return "redirect:/admin/home";
@@ -170,14 +155,13 @@ public class UserController {
         if (!multipartFile.isEmpty()){
             String tail = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().length() - 4);
             if (tail.equals(".jpg") || tail.equals(".png")){
-                String imageName = param.getId() + tail;
-                String filePath = Paths.get("").toAbsolutePath() + "/target/classes/static/images/";
+                String imageName = param.getId() + ".jpg";
+                String filePath1 = Paths.get("").toAbsolutePath() + "/target/classes/static/images/";
+                String filePath2 = Paths.get("").toAbsolutePath() + "/src/main/resources/images/";
                 param.setImage("images/" + imageName);
-                if (tail.equals(".jpg"))
-                    Files.deleteIfExists(Paths.get(filePath + param.getId() + ".png"));
-                else
-                    Files.deleteIfExists(Paths.get(filePath + param.getId() + ".jpg"));
-                multipartFile.transferTo(Paths.get(filePath + imageName));
+//                Files.deleteIfExists(Paths.get(filePath + param.getId() + ".jpg"));
+                multipartFile.transferTo(Paths.get(filePath1 + imageName));
+                multipartFile.transferTo(Paths.get(filePath2 + imageName));
             }
             else {
                 String message = "Just accept .jpg or .png file";
@@ -203,11 +187,6 @@ public class UserController {
         model.addAttribute("user", new UserDto());
         model.addAttribute("indexSchool", index);
         return "add-school";
-    }
-
-    @GetMapping("/protectedLinks")
-    public String getAnonymousPage() {
-        return "protectedLinks";
     }
 
     @GetMapping("/403")
