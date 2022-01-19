@@ -55,6 +55,8 @@ public class WebSecurityConfig{
                         .authorizeRequests()
                         .antMatchers("/admin/**")
                         .hasAuthority("ADMIN")
+                        .anyRequest()
+                        .authenticated()
 
                         .and()
                         .formLogin()

@@ -8,49 +8,13 @@
 
     <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
     <link rel="shortcut icon" href="#">
-    <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
-    <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
 </head>
 <body>
+<div th:replace="admin/fragment :: header_menu"></div>
 <div class="container-fluid">
-    <div>
-        <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
-            <a class="navbar-brand" th:href="@{/}">
-                <img th:src="@{/images/site/pictureSmall.png}" alt="">
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle = "collapse" data-target="#topNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="topNavbar">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a th:href="@{/adminSite/users}" class="nav-link">Users</a>
-                    </li>
-                    <li class="nav-item">
-                        <a th:href="@{adminSite/categories}" class="nav-link">Danh mục</a>
-                    </li>
-                    <li class="nav-item">
-                        <a th:href="@{adminSite/publicsher}" class="nav-link">Nhà xuất bản</a>
-                    </li>
-                    <li class="nav-item">
-                        <a th:href="@{adminSite/products}" class="nav-link">Sản phẩm</a>
-                    </li>
-                    <li class="nav-item">
-                        <a th:href="@{adminSite/customers}" class="nav-link">Khách hàng</a>
-                    </li>
-                    <li class="nav-item">
-                        <a th:href="@{adminSite/orders}" class="nav-link">Đơn hàng</a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-    </div>
-    <div>
-        <h1>FakeBookShop Admin Control</h1>
-    </div>
-    <div>
-        <p>FakeBookShop Control Panel - Copyright &copy; FakeBook</p>
-    </div>
+
+    <h1>FakeBookShop Admin Control</h1>
+    <div th:replace="admin/fragment :: footer_menu"></div>
 </div>
 
 </body>

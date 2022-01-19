@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>List product</title>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="shortcut icon" href="#">
+</head>
+<body>
+<div th:replace="admin/fragment :: header_menu"></div>
+<div class="container-fluid">
+    <h1 style="text-align: center">List product</h1>
+    <a class="btn btn-success" th:href="@{/admin/add-product}">Add product</a>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th scope="col">No</th>
+                <th scope="col">Name</th>
+                <th scope="col">Cost</th>
+                <th scope="col">Discount percent</th>
+                <th scope="col">Enabled</th>
+                <th scope="col">Description</th>
+                <th scope="col">Image</th>
+                <th scope="col">In stock</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Price</th>
+                <th scope="col">Category</th>
+                <th scope="col">Publisher</th>
+                <th scope="col">Function</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="product, state : ${products}">
+                <th scope="row" th:utext="${state.count}"></th>
+                <td th:utext="${product.name}"></td>
+                <td th:utext="${product.cost}"></td>
+                <td th:utext="${product.discountPercent}"></td>
+                <td th:utext="${product.enabled}"></td>
+                <td th:utext="${product.description}"></td>
+                <td><img width="100" height="100" alt="image" th:src="@{'/product-images/' + ${product.id} + '/'+ ${product.image}}"></td>
+                <td th:utext="${product.inStock}"></td>
+                <td th:utext="${product.quantity}"></td>
+                <td th:utext="${product.price}"></td>
+                <td th:utext="${product.category.name}"></td>
+                <td th:utext="${product.publisher.name}"></td>
+                <td>
+                    <div class="btn-group-vertical">
+                        <button class="btn btn-info">Edit</button>
+                        <button class="btn btn-danger">Delete</button>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div th:replace="admin/fragment :: footer_menu"></div>
+</div>
+</body>
+</html>
