@@ -55,6 +55,10 @@ public class Product extends IdBaseEntity{
     @JoinColumn(name = "publisher_id")
     private Publisher publisher;
 
+    public Product(Integer id){
+        this.id = id;
+    }
+
     @OneToMany(mappedBy = "product")
     private List<CartAndProduct> productAssoc;
 

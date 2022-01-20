@@ -9,6 +9,7 @@
 </head>
 <body>
 <div class="container">
+    <div th:replace = "navigation :: header_menu"></div>
     <h1 style="text-align: center">Change profile</h1>
     <div class="border border-secondary rounded p-3" style="max-width: 900px; margin: 0 auto;">
         <form class="information" method="post" th:object="${user}" th:action="@{/change-profile}" enctype="multipart/form-data">

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>FakeBookShop</title>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="shortcut icon" href="#">
+    <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid">
+    <div th:replace="navigation :: header_menu"></div>
+
+    <div class="text-center">
+        <h2>Các đơn hàng của bạn</h2>
+    </div>
+
+    <div th:if="${checkNullPurchaseOrder} eq true">
+        <h3>Bạn chưa có đơn hàng nào</h3>
+
+    </div>
+
+    <div th:if="${checkNullPurchaseOrder} eq false">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12 col-md-10 col-md-offset-1">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+<!--                            <th>Id đơn hàng</th>-->
+                            <th>Sản phẩm</th>
+                            <th>Số lượng</th>
+<!--                            <th></th>-->
+<!--                            <th class="text-center">Giá</th>-->
+<!--                            <th class="text-center">Tổng tiền</th>-->
+<!--                            <th></th>-->
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${listProductPurchase}">
+                            <td class="col-md-6">
+                                <div class="media">
+                                    <a class="thumbnail pull-left" href="#">
+                                        <img class="media-object"
+                                             th:src="@{'/product-images/' + ${item.productId} + '/'+ ${item.productImage}}"
+                                             style="width: 72px; height: 72px;" >
+                                    </a>
+                                    <div class="media-body">
+                                        <h4 class="media-heading"><a th:href="@{'/p/' + ${item.productId}}" th:text="${item.productName}"></a></h4>
+                                        <h5 class="media-heading"> by <a th:text="${item.pulisherName}" href="#"></a></h5>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="col-md-1" style="text-align: center">
+                                <input type="email" class="form-control" th:id="'quantity' + ${item.productId}"
+                                       th:value="${item.quantity}" readonly>
+                            </td>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+</div>
+<th:block>
+    <script type="text/javascript" th:src="@{/js/cart-item.js}"></script>
+    <script type="text/javascript">
+        contextPath = "[[@{/}]]";
+
+        $(function (){
+            $(".btnContinueShop").click(function(){
+                window.location.href = "[[@{/view}]]";
+            })
+        })
+    </script>
+
+</th:block>
+</body>
+</html>
