@@ -19,4 +19,10 @@ public interface ProductService {
     List<ProductDto> findAllProduct();
 
     void createProduct(ProductDto productDto);
+
+    void deleteProduct(int id);
+
+    ProductDto findById(int id);
+
+    void updateProduct(ProductDto productDto);
 }
