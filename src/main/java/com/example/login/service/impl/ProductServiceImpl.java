@@ -37,6 +37,6 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Page<Product> searchProduct(String keyword) {
         Pageable pageable = PageRequest.of(0,10);
-        return repo.search(keyword, pageable);
+        return repo.findAllProduct(keyword, pageable);
     }
 }

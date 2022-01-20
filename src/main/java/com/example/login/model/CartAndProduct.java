@@ -70,4 +70,8 @@ public class CartAndProduct {
         return product.getDiscountPrice();
     }
 
+    public int getRemainingProduct(){
+        return product.getQuantity();
+    }
+
 }
