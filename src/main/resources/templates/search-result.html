@@ -15,11 +15,11 @@
     <div>
         <h1>Danh sách sản phẩm tìm được</h1>
     </div>
-    <div th:unless="${totalItems < 0}">
-        <h3> Không tìm thấy sản phẩm với từ khóa ' [[${keyword}]]</h3>
-    </div>
+<!--    <div th:unless="${totalItems <= 0}">-->
+<!--        <h3> Không tìm thấy sản phẩm với từ khóa ' [[${keyword}]] '</h3>-->
+<!--    </div>-->
     <div class="row">
-        <div class="col-sm-2" th:each="prod : ${pageProducts}">
+        <div class="col-sm-2" th:each="prod : ${listProducts}">
             <div>
                 <img th:src="@{'/product-images/' + ${prod.id} + '/'+ ${prod.image}}" width="80">
             </div>

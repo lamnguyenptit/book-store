@@ -53,10 +53,18 @@ public class MainController {
     @GetMapping("/search")
     public String search(@Param("keyword") String keyword, Model model){
         Page<Product> pageProducts = productService.searchProduct(keyword);
+        List<Product> listProducts = pageProducts.getContent();
+        Integer totalItem = Math.toIntExact(pageProducts.getTotalElements());
 
         model.addAttribute("pageProducts",pageProducts );
-        model.addAttribute("totalItems", pageProducts.getTotalElements());
+        model.addAttribute("totalItems", totalItem);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("listProducts", listProducts);
         return "search-result";
+    }
+
+    @GetMapping("/contact")
+    public String contactToShop(){
+        return "contact";
     }
 }
