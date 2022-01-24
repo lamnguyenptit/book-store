@@ -12,6 +12,7 @@
           </span>
         <input type="text" name="quant[2]" class="form-control input-number" th:value="${quantityValue}"
                th:id="'quantity'+ ${productId}">
+<!--               oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');">-->
         <span class="input-group-btn">
               <a class="btn btn-success btn-number linkPlus" data-type="plus" data-field="quant[2]" th:pid="${productId}"
                     th:maxQuan = "${maxQuantity}">

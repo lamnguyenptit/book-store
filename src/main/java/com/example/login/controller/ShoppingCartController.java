@@ -8,12 +8,15 @@ import com.example.login.model.CartAndProduct;
 import com.example.login.model.Product;
 import com.example.login.model.User;
 import com.example.login.repository.CartRepository;
+import com.example.login.service.ProductService;
 import com.example.login.service.ShoppingCartService;
 import com.example.login.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -27,8 +30,11 @@ public class ShoppingCartController {
     @Autowired
     private ShoppingCartService shoppingCartService;
 
+    @Autowired
+    private ProductService productService;
+
     @GetMapping("/cart")
-    public String viewCart(Model model, HttpServletRequest request){
+    public String viewCart(Model model, HttpServletRequest request) throws UserNotFoundException {
         User user = getAuthenticatedUser(request);
         Cart cart = shoppingCartService.getCartByUser(user.getId());
         Boolean checkNullCart = true;
@@ -58,69 +64,131 @@ public class ShoppingCartController {
     }
 
 
-    public User getAuthenticatedUser(HttpServletRequest request) {
-        Object principal = request.getUserPrincipal();
-        if(principal == null) return null;
+    public User getAuthenticatedUser(HttpServletRequest request) throws UserNotFoundException {
         String userEmail = request.getUserPrincipal().getName();
+        if(userEmail == null)
+            throw new UserNotFoundException("Không tồn tại khách hàng!");
         return userService.getUserByEmail(userEmail);
     }
 
 
     @PostMapping("/cart/add/{productId}/{quantity}")
     @ResponseBody
-    public String addToCart(@PathVariable("productId") String productId,
-                            @PathVariable("quantity") String quantity, HttpServletRequest request){
-//       try{
+    public String addToCart(@PathVariable("productId") String productId, @PathVariable("quantity") String quantity,
+                            HttpServletRequest request){
+       try{
            User user = getAuthenticatedUser(request);
-//           Cart cartByUser = shoppingCartService.getCartByUser(user.getId());
+           if(quantity == null)
+               return "Cần nhập số lượng";
+           Integer quantityVal;
+           try{
+               quantityVal = Integer.parseInt(quantity);
+           }catch(NumberFormatException e){
+               return "Số lượng nhập không đúng định dạng";
+           }
+//           if(bindingResult.hasErrors()){
+//               return "Đã có lỗi xảy ra";
+//           }
+//           if(quantityVal <= 0)
+//               redirectAttributes.addFlashAttribute("message", "Số lượng thêm vào giỏ cần lớn hơn 0!");
+
+           if(quantityVal <= 0)
+               return "Số lượng cần lớn hơn 0";
+           int quantityProductInCartByUser = shoppingCartService.getQuantityProductInCart(user.getId(),Integer.parseInt(productId));
+           int pieceValue = productService.getQuantityProduct(Integer.parseInt(productId));
+           if(( quantityVal + quantityProductInCartByUser) > pieceValue)
+               return "Tổng số lượng mua lớn hơn số lượng còn lại";
+
            Integer updateQuantity = shoppingCartService.updateQuantity(user.getId(), Integer.parseInt(productId),
-                   Integer.parseInt(quantity));
-           return updateQuantity +  " đã cập nhật thành công vào giỏ hàng";
-//       }
-//       catch (UserNotFoundException ex){
-//           return "Bạn cần đăng nhập để thêm sản phẩm này vào giỏ hàng";
-//       }
-//       catch(ShoppingCartException se){
-//           return se.getMessage();
-//       }
+                   quantityVal);
+           return updateQuantity +  " sản phẩm đã cập nhật thành công vào giỏ hàng";
+
+       }
+       catch (UserNotFoundException ex){
+           return "Bạn cần đăng nhập để thêm sản phẩm này vào giỏ hàng";
+       }
+       catch(ShoppingCartException se){
+           return se.getMessage();
+       }
     }
 
     @PostMapping("/cart/remove/{productId}")
     @ResponseBody
-    public void removeFromCart(@PathVariable("productId") String productId,
+    public String removeFromCart(@PathVariable("productId") String productId,
                                HttpServletRequest request){
-        User user = getAuthenticatedUser(request);
-        shoppingCartService.removeProductFromCart(user.getId(), Integer.parseInt(productId));
+        try{
+            User user = getAuthenticatedUser(request);
+            shoppingCartService.removeProductFromCart(user.getId(), Integer.parseInt(productId));
+            return "Đã xóa sản phẩm thành công!";
+        }catch (UserNotFoundException enf){
+            return "Bạn cần phải đăng nhập để loại bỏ sản phẩm";
+        }
     }
 
     @PostMapping("/cart/update/{productId}/{quantity}")
     @ResponseBody
     public String updateProductByUser(@PathVariable("productId") String productId,
                                     @PathVariable("quantity") String quantity, HttpServletRequest request){
+        try{
             User user = getAuthenticatedUser(request);
             Float subTotal = shoppingCartService.updateSubTotal(user.getId(), Integer.parseInt(productId), Integer.parseInt(quantity));
             return String.valueOf(subTotal);
+        }catch (UserNotFoundException unf){
+            return "Bạn cần phải đăng nhập để chỉnh sửa";
+        }
+    }
+    @GetMapping("/prepareCheckout")
+    @ResponseBody
+    public String prepareCheckout(@RequestParam("productId") String productId, @RequestParam("productQuantity") String productQuantity,
+                                  @RequestParam("checkIns") String checkIns){
+            if(Boolean.valueOf(checkIns) == false)
+                return "Không có sẵn trong kho với sản phẩm ID"+productId;
+           if(productQuantity == null)
+               return "Bạn cần nhập số lượng với sản phẩm ID"+productId;
+           Integer quantityVal;
+           try{
+               quantityVal = Integer.valueOf(productQuantity);
+           }catch(NumberFormatException e){
+               return "Số lượng nhập không đúng định dạng với sản phẩm ID"+productId;
+           }
+           if(quantityVal<=0)
+               return "Số lượng nhập cần lớn hơn 0 với sản phẩm ID"+productId;
+           int pieceValue = productService.getQuantityProduct(Integer.parseInt(productId));
+           if(quantityVal > pieceValue)
+               return "Tổng số lượng mua lớn hơn số lượng còn lại với sản phẩm ID" + productId;
+
+           return "";
     }
 
+
     @GetMapping("/checkout")
+    @ResponseBody
     public String checkoutCart(HttpServletRequest request) throws ProductNotFoundException {
-        User user = getAuthenticatedUser(request);
-        shoppingCartService.checkOutCart(user.getId());
-        return "redirect:/view";
+        try{
+            User user = getAuthenticatedUser(request);
+            shoppingCartService.checkOutCart(user.getId());
+            return "Bạn đã đặt hàng thành công";
+        }catch (UserNotFoundException unf){
+            return "Bạn cần phải đăng nhập để thanh toán";
+        }
     }
 
     @GetMapping("/purchase")
     public String viewPurchaseOrder(Model model, HttpServletRequest request){
-        User user = getAuthenticatedUser(request);
-        Boolean checkNullPurchaseOrder = true;
-        List<CartAndProduct> listProductPurchase = shoppingCartService.listProductPurchase(user.getId());
-        if(listProductPurchase == null){
-            model.addAttribute("checkNullPurchaseOrder", checkNullPurchaseOrder);
-            return "purchase_order";
-        }
-        checkNullPurchaseOrder = false;
-        model.addAttribute("checkNullPurchaseOrder", checkNullPurchaseOrder);
-        model.addAttribute("listProductPurchase", listProductPurchase);
-        return "purchase_order";
+       try{
+           User user = getAuthenticatedUser(request);
+           Boolean checkNullPurchaseOrder = true;
+           List<CartAndProduct> listProductPurchase = shoppingCartService.listProductPurchase(user.getId());
+           if(listProductPurchase == null){
+               model.addAttribute("checkNullPurchaseOrder", checkNullPurchaseOrder);
+               return "purchase_order";
+           }
+           checkNullPurchaseOrder = false;
+           model.addAttribute("checkNullPurchaseOrder", checkNullPurchaseOrder);
+           model.addAttribute("listProductPurchase", listProductPurchase);
+           return "purchase_order";
+       }catch(UserNotFoundException une){
+           return "Bạn cần phải đăng nhập";
+       }
     }
 }

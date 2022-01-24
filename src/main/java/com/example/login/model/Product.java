@@ -7,7 +7,9 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "product")
@@ -49,9 +51,6 @@ public class Product extends IdBaseEntity{
     @Column(nullable = false)
     private Float price;
 
-    @ManyToOne
-    @JoinColumn(name="category_id")
-    private Category category;
 
     @ManyToOne
     @JoinColumn(name = "publisher_id")
@@ -83,7 +82,14 @@ public class Product extends IdBaseEntity{
         this.inStock = inStock;
         this.quantity = quantity;
         this.price = price;
-        this.category = category;
         this.publisher = publisher;
     }
+
+    @ManyToMany
+    @JoinTable(
+            name = "product_category",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<Category> categories = new HashSet<>();
 }
