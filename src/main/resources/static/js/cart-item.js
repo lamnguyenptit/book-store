@@ -37,10 +37,16 @@ function decreaseQuantity(link){
 
 function increaseQuantity(link){
     let productId = link.attr("pid");
+    pieceAvailable = link.attr("maxQuan");
+    // number = String.valueOf(pieceAvailable);
     quantityInput = $("#quantity" + productId);
     newQuantity = parseInt(quantityInput.val()) + 1;
-    quantityInput.val(newQuantity);
-    updateQuantity(productId, newQuantity);
+    if(newQuantity > parseInt(pieceAvailable)) {
+        showModalWarning("Cảnh báo", "Số lượng đặt vượt quá số lượng trong kho");
+        newQuantity = 1;
+    }
+        quantityInput.val(newQuantity);
+        updateQuantity(productId, newQuantity);
 }
 
 function updateQuantity(productId, quantity){
@@ -67,12 +73,6 @@ function updateTotal(){
     $(".subtotal").each(function (index, element){
         total += parseInt(element.innerHTML);
     });
-
-    // if(productCount < 1){
-    //     showEmptyShoppingCart();
-    // } else {
-    //     $("#total").text(formatCurrency(total));
-    // }
     $("#orderTotalMoney").text(total);
 }
 
@@ -91,3 +91,11 @@ $(function (){
         window.location.href = "/view";
     })
 })
+
+function showModalWarning(title, body){
+    // $("#modalTitle").text(title);
+    // $("#modalBody").text(body);
+    // $("#modalDialog").modal();
+    alert(body);
+}
+

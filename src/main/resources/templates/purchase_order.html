@@ -33,9 +33,11 @@
                     <table class="table table-hover">
                         <thead>
                         <tr>
-<!--                            <th>Id đơn hàng</th>-->
+                            <th>Id <br>đơn hàng</th>
                             <th>Sản phẩm</th>
                             <th>Số lượng</th>
+                            <th>Tổng tiền</th>
+                            <th>Ngày đặt hàng</th>
 <!--                            <th></th>-->
 <!--                            <th class="text-center">Giá</th>-->
 <!--                            <th class="text-center">Tổng tiền</th>-->
@@ -44,11 +46,12 @@
                         </thead>
                         <tbody>
                         <tr th:each="item : ${listProductPurchase}">
+                            <td th:text="${item.cart.id}" style="font-weight: bold"></td>
                             <td class="col-md-6">
                                 <div class="media">
                                     <a class="thumbnail pull-left" href="#">
                                         <img class="media-object"
-                                             th:src="@{'/product-images/' + ${item.productId} + '/'+ ${item.productImage}}"
+                                             th:src="@{'/product-images/'+ ${item.productImage}}"
                                              style="width: 72px; height: 72px;" >
                                     </a>
                                     <div class="media-body">
@@ -60,6 +63,12 @@
                             <td class="col-md-1" style="text-align: center">
                                 <input type="email" class="form-control" th:id="'quantity' + ${item.productId}"
                                        th:value="${item.quantity}" readonly>
+                            </td>
+                            <td class="col-md-1" style="text-align: center">
+                                <span th:text="${item.subTotal}"></span>
+                            </td>
+                            <td class="col-md-1" style="text-align: center">
+                                <span th:text="${item.checkoutDate}"></span>
                             </td>
                         </tbody>
                     </table>

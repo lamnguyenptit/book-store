@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-sm-2" th:each="prod : ${listProductByCategory}">
             <div>
-                <img th:src="@{'/product-images/' + ${prod.id} + '/'+ ${prod.image}}" width="80">
+                <img th:src="@{'/product-images/'+ ${prod.image}}" width="80">
             </div>
             <div>
                 <a th:href="@{'/p/' + ${prod.id}}">[[${prod.name}]]</a>

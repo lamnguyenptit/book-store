@@ -37,15 +37,20 @@ public class MainController {
     @GetMapping("/c/{id}")
     public String getAllProductInCategory(@PathVariable(value = "id") String id,
                                           Model model){
-        Page<Product> listProductByCategory = productService.listProductByCategory(Integer.parseInt(id));
+        List<Product> listProductByCategory = productService.listProductByCategory(Integer.parseInt(id));
         model.addAttribute("listProductByCategory", listProductByCategory);
         return "view-product-by-category";
     }
 
     @GetMapping("/p/{id}")
-    public String getDetailProduct(@PathVariable(value = "id") String id,
+    public String getDetailProduct(@PathVariable(value = "id") String productId,
                                   Model model) throws ProductNotFoundException {
-        Product productDetail = productService.getProduct(id);
+        Product productDetail = productService.getProduct(productId);
+        List<Product> listProductSameCategory = productService.listProductSameCategory(Integer.parseInt(productId));
+        List<Product> listProductSameMoney = productService.listProductSameMoney(Integer.parseInt(productId));
+
+        model.addAttribute("listProductSameMoney", listProductSameMoney);
+        model.addAttribute("listProductSameCategory", listProductSameCategory);
         model.addAttribute("productDetail", productDetail);
         return "view-detail-product";
     }

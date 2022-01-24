@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "cart_product")
@@ -24,6 +25,12 @@ public class CartAndProduct {
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
+
+    @Column(name = "checkout_date")
+    private Date checkoutDate;
+
+    @Column(name = "sub_total")
+    private Float subTotal;
 
     @Override
     public String toString() {
@@ -60,7 +67,7 @@ public class CartAndProduct {
         if(product.isInStock() == false)
             return -1;
         int amount = product.getQuantity();
-        if(amount > quantity){
+        if(amount >= quantity){
             return 0;}
         else
             return  1;

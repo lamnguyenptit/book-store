@@ -7,6 +7,7 @@ import com.example.login.model.Publisher;
 import com.example.login.model.dto.CategoryDto;
 import com.example.login.model.dto.ProductDto;
 import com.example.login.model.dto.PublisherDto;
+import com.example.login.repository.CategoryRepository;
 import com.example.login.repository.ProductRepository;
 import com.example.login.service.ProductService;
 import org.springframework.beans.BeanUtils;
@@ -17,8 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,10 +28,20 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository repo;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     @Override
-    public Page<Product> listProductByCategory(Integer catId) {
+    public List<Product> listProductByCategory(Integer catId) {
         Pageable pageable = PageRequest.of(0, 10);
-        return repo.listProductByCategory(catId, pageable);
+        List<Integer> listAllProductIdByCategory = repo.getAllIdProductCategories(catId);
+        List<Product> listAllProduct = new ArrayList<>();
+        for (Integer productId :
+                listAllProductIdByCategory) {
+            Product product = repo.findById(productId).get();
+            listAllProduct.add(product);
+        }
+        return listAllProduct;
     }
 
     @Override
@@ -69,7 +79,7 @@ public class ProductServiceImpl implements ProductService {
         BeanUtils.copyProperties(product, productDto);
 
         CategoryDto categoryDto = new CategoryDto();
-        BeanUtils.copyProperties(product.getCategory(), categoryDto);
+        //BeanUtils.copyProperties(product.getCategory(), categoryDto);
         productDto.setCategory(categoryDto);
 
         PublisherDto publisherDto = new PublisherDto();
@@ -82,5 +92,34 @@ public class ProductServiceImpl implements ProductService {
         if (products == null)
             return null;
         return products.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public Integer getQuantityProduct(Integer productId) {
+        return repo.getQuantityProduct(productId);
+    }
+
+    @Override
+    public List<Product> listProductSameCategory(Integer productId) {
+        List<Product> getSomeProduct = new ArrayList<>();
+        Product product = repo.findById(productId).get();
+        Set<Category> listAllCategory = product.getCategories();
+        for (Category category :
+                listAllCategory) {
+            List<Product> listProductByCategory = category.getProductSet();
+            listProductByCategory.removeAll(Arrays.asList(product));
+            List<Product> listSubList = (listProductByCategory.size() <=2) ? listProductByCategory.subList(0,listProductByCategory.size()) : listProductByCategory.subList(0,2);
+            getSomeProduct.addAll(listSubList);
+        }
+        return  getSomeProduct;
+    }
+
+    @Override
+    public List<Product> listProductSameMoney(int productId) {
+        Product product = repo.findById(productId).get();
+        double money = product.getDiscountPrice();
+        List<Product> listProductSameMoney = repo.listProductSameMoney(money);
+        listProductSameMoney.removeAll(Arrays.asList(product));
+        return listProductSameMoney;
     }
 }
