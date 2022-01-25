@@ -7,9 +7,13 @@ import com.example.login.service.CategoryService;
 import com.example.login.service.ProductService;
 import com.example.login.service.PublisherService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +26,15 @@ import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Controller
 public class ProductController {
+    private static final int PRODUCTS_PER_PAGE = 5;
+
     @Autowired
     private ProductService productService;
 
@@ -36,17 +45,46 @@ public class ProductController {
     private PublisherService publisherService;
 
     @GetMapping("/admin/product")
-    public String showProductPage(Model model){
-        List<ProductDto> productDtos = productService.findAllProduct();
+    public String showProductPage(Model model, @RequestParam("page") Optional<Integer> page, @RequestParam(name = "keyword", required = false)String keyword){
+//        Optional<Integer> page = Optional.of(pageable.getPageNumber());
+//        Optional<Integer> size = Optional.of(pageable.getPageSize());
+        int currentPage = page.orElse(1);
+        Page<ProductDto> productDtos;
+        if (!StringUtils.hasText(keyword))
+            productDtos = productService.findAllProduct(PageRequest.of(currentPage - 1, PRODUCTS_PER_PAGE));
+        else
+            productDtos = productService.findProductsByName(PageRequest.of(currentPage - 1, PRODUCTS_PER_PAGE), keyword);
         model.addAttribute("products", productDtos);
-        model.addAttribute("product", new ProductDto());
-        List<CategoryDto> categoryDtos = categoryService.findAllCategory();
-        model.addAttribute("category", categoryDtos);
+        int totalPage = productDtos.getTotalPages();
+        if (totalPage > 0){
+            List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPage).boxed().collect(Collectors.toList());
+            model.addAttribute("pageNumbers", pageNumbers);
+        }
+//        model.addAttribute("product", new ProductDto());
+//        List<CategoryDto> categoryDtos = categoryService.findAllCategory();
+//        model.addAttribute("category", categoryDtos);
+//        List<PublisherDto> publisherDtos = publisherService.findAllPublisher();
+//        model.addAttribute("publisher", publisherDtos);
 
-        List<PublisherDto> publisherDtos = publisherService.findAllPublisher();
-        model.addAttribute("publisher", publisherDtos);
+        model.addAttribute("keyword", keyword);
         return "admin/list-product";
     }
+
+//    @PostMapping("/admin/product")
+//    public String searchProduct(Model model, @RequestParam("page") Optional<Integer> page, @RequestParam(name = "keyword", required = false)String name){
+//        if (!StringUtils.hasText(name))
+//            return "redirect:/admin/product";
+//        int currentPage = page.orElse(1);
+//        Page<ProductDto> productDtos = productService.findProductsByName(PageRequest.of(currentPage - 1, PRODUCTS_PER_PAGE), name);
+//        model.addAttribute("products", productDtos);
+//        int totalPage = productDtos.getTotalPages();
+//        if (totalPage > 0){
+//            List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPage).boxed().collect(Collectors.toList());
+//            model.addAttribute("pageNumbers", pageNumbers);
+//        }
+//        model.addAttribute("keyword", name);
+//        return "admin/list-product";
+//    }
 
     @GetMapping("/admin/add-product")
     public String showAddProductPage(Model model){
@@ -115,6 +153,10 @@ public class ProductController {
             String tail = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().length() - 4);
             if (tail.equals(".jpg") || tail.equals(".png")) {
                 String imageName = productDto.getImage();
+                if (imageName == null || imageName.equals("")){
+                    imageName = UUID.randomUUID() + ".jpg";
+                    productDto.setImage(imageName);
+                }
                 String filePath1 = Paths.get("").toAbsolutePath() + "/target/classes/static/product-images/";
                 String filePath2 = Paths.get("").toAbsolutePath() + "/src/main/resources/static/product-images/";
                 multipartFile.transferTo(Paths.get(filePath1 + imageName));

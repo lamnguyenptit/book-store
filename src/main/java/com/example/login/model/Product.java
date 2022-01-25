@@ -15,7 +15,7 @@ import java.util.List;
 @ToString
 public class Product extends IdBaseEntity{
 
-    @Column(length = 100, unique = true)
+    @Column(length = 100)
     private String name;
 
     private Float cost;
@@ -74,6 +74,20 @@ public class Product extends IdBaseEntity{
         this.name = name;
         this.cost = cost;
         this.createTime = createTime;
+        this.discountPercent = discountPercent;
+        this.enabled = enabled;
+        this.description = description;
+        this.image = image;
+        this.inStock = inStock;
+        this.quantity = quantity;
+        this.price = price;
+        this.category = category;
+        this.publisher = publisher;
+    }
+
+    public Product(String name, Float cost, Float discountPercent, boolean enabled, String description, String image, boolean inStock, int quantity, Float price, Category category, Publisher publisher) {
+        this.name = name;
+        this.cost = cost;
         this.discountPercent = discountPercent;
         this.enabled = enabled;
         this.description = description;

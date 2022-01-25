@@ -102,7 +102,7 @@ public class WebSecurityConfig{
             try {
                 http
                         .authorizeRequests()
-                        .antMatchers("/loginAdmin","/login-google/**","/register/**", "/forgot-password/**", "/reset-password/**", "/oauth/**")
+                        .antMatchers("/loginAdmin","/login-google/**","/register/**", "/forgot-password/**", "/reset-password/**", "/oauth/**", "/view/**")
                         .permitAll()
                         .antMatchers("/user/**")
                         .hasAuthority("USER")

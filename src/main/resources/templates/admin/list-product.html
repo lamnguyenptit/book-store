@@ -12,7 +12,13 @@
 <div th:replace="admin/fragment :: header_menu"></div>
 <div class="container-fluid">
     <h1 style="text-align: center">List product</h1>
-    <a class="btn btn-success" th:href="@{/admin/add-product}">Add product</a>
+    <form class="form-check-inline" th:action="@{/admin/product}">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Search by name" th:value="${keyword}" name="keyword">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search me-2"></i>Search</button>
+        </div>
+    </form>
+    <div class="mb-3"><a class="btn btn-success" th:href="@{/admin/add-product}">+ Add product</a></div>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -55,6 +61,55 @@
             </tr>
         </tbody>
     </table>
+<!--    Pagination-->
+    <nav aria-label="Page navigation" th:if="${products.totalPages > 0}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${products.number == 0 ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{'/admin/product'(page=1, keyword=${keyword})}">First</a>
+            </li>
+            <li class="page-item" th:classappend="${!products.hasPrevious() ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{'/admin/product'(page=${products.number}, keyword=${keyword})}">Previous</a>
+            </li>
+<!--            <th:block th:each="pageNumber : ${pageNumbers}">-->
+<!--                <li class="page-item">-->
+<!--                    <a class="page-link" th:href="@{/admin/product(page=${pageNumber}, size=${products.size})}" th:text="${pageNumber}"></a>-->
+<!--                </li>-->
+<!--            </th:block>-->
+            <th:block th:if="${products.totalPages <= 5}">
+                <li th:each="pageNumber : ${pageNumbers}" class="page-item" th:classappend="${pageNumber == products.number + 1 ? 'active' : ''}">
+                    <a class="page-link" th:href="@{/admin/product(page=${pageNumber}, keyword=${keyword})}" th:text="${pageNumber}"></a>
+                </li>
+            </th:block>
+
+            <th:block th:if="${products.totalPages > 5}">
+                <th:block th:if="${products.number + 1 <= 3 || products.number + 1 > products.totalPages - 3}">
+                    <li th:each="pageNumber : ${#numbers.sequence(1, 3)}" class="page-item" th:classappend="${pageNumber == products.number + 1 ? 'active' : ''}">
+                        <a class="page-link" th:href="@{/admin/product(page=${pageNumber}, keyword=${keyword})}" th:text="${pageNumber}"></a>
+                    </li>
+                    <a class="page-link" th:if="${products.number} + 1 <= 3" th:href="@{/admin/product(page=4)}" th:text="..."></a>
+                    <a class="page-link" th:if="${products.number} + 1 > ${products.totalPages} - 3" th:href="@{/admin/product(page=${products.totalPages} - 3)}" th:text="..."></a>
+                    <li th:each="pageNumber : ${#numbers.sequence(products.totalPages - 2, products.totalPages)}" class="page-item" th:classappend="${pageNumber == products.number + 1 ? 'active' : ''}">
+                        <a class="page-link" th:href="@{/admin/product(page=${pageNumber}, keyword=${keyword})}" th:text="${pageNumber}"></a>
+                    </li>
+                </th:block>
+                <th:block th:if="${products.number + 1 > 3 && products.number + 1 < products.totalPages - 2}">
+                    <a class="page-link" th:href="@{/admin/product(page=${products.number} + 1 - 3, keyword=${keyword})}" th:text="..."></a>
+                    <li th:each="pageNumber : ${#numbers.sequence(products.number + 1 - 2, products.number + 1 + 2)}" class="page-item" th:classappend="${pageNumber == products.number + 1 ? 'active' : ''}">
+                        <a class="page-link" th:href="@{/admin/product(page=${pageNumber}, keyword=${keyword})}" th:text="${pageNumber}"></a>
+                    </li>
+                    <a class="page-link" th:href="@{/admin/product(page=${products.number} + 1 + 3, keyword=${keyword})}" th:text="..."></a>
+                </th:block>
+            </th:block>
+
+            <li class="page-item" th:classappend="${!products.hasNext() ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{'/admin/product'(page=${products.number + 2}, keyword=${keyword})}">Next</a>
+            </li>
+            <li class="page-item" th:classappend="${products.number + 1 == products.totalPages ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{'/admin/product'(page=${products.totalPages}, keyword=${keyword})}">Last</a>
+            </li>
+        </ul>
+    </nav>
+<!--    End of pagination-->
     <div th:replace="admin/fragment :: footer_menu"></div>
 </div>
 
