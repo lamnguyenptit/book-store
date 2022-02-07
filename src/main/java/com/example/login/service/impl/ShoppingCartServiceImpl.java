@@ -11,16 +11,16 @@ import com.example.login.repository.CartRepository;
 import com.example.login.repository.ProductRepository;
 import com.example.login.service.ShoppingCartService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Transactional
 public class ShoppingCartServiceImpl implements ShoppingCartService {
+    public final static int PRODUCT_PER_PAGE = 2;
 
     @Autowired
     private CartRepository cartRepository;
@@ -32,6 +32,39 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Override
     public Cart getCartByUser(Integer userId) {
         return cartRepository.findCartNotCheckoutByUser(userId);
+    }
+
+    @Override
+    public Page<CartAndProduct> listProductByUserCart(Integer cartId, int currentPage, String fieldName, String sortDir) {
+        Sort sort = Sort.by(fieldName);
+        sort = sortDir.equals("asc") ? sort.descending() : sort.ascending();
+
+        Pageable pageable = PageRequest.of(currentPage - 1, PRODUCT_PER_PAGE, sort);
+        List<CartAndProduct> content =  cartProductRepository.listProductByUserCart(cartId);
+
+        Comparator<CartAndProduct> compareByField = new Comparator<CartAndProduct>() {
+            @Override
+            public int compare(CartAndProduct o1, CartAndProduct o2) {
+                switch (fieldName){
+                    case "id": return o1.getProduct().getId().compareTo(o2.getProduct().getId());
+                    case "quantity": return o1.getQuantity().compareTo(o2.getQuantity());
+                    case "subTotal": return o1.getSubTotal().compareTo(o2.getSubTotal());
+                }
+                return 0;
+            }
+        };
+
+        if(sortDir.equals("asc"))
+            Collections.sort(content, compareByField);
+        else
+            Collections.sort(content, compareByField.reversed());
+
+
+         int start = (int) pageable.getOffset();
+         int end = start + PRODUCT_PER_PAGE ; // co the su dung Math.min()
+        if(end > content.size())
+            end = content.size();
+        return new PageImpl<>(content.subList(start, end), pageable, content.size());
     }
 
     @Override
@@ -111,14 +144,42 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
-    public List<CartAndProduct> listProductPurchase(int userId) {
+    public Page<CartAndProduct> listProductPurchase(int userId, int pageNum, String sortField, String sortDir) {
+
+        Sort sort = Sort.by(sortField);
+        sort = sortDir.equals("asc") ? sort.ascending() : sort.descending();
+        Pageable pageable = PageRequest.of(pageNum - 1, PRODUCT_PER_PAGE, sort);
+
         List<Cart> listCartPurchase = cartRepository.listCartPurchase(userId);
         List<CartAndProduct> listProductPurchase = new ArrayList<>();
         for(Cart cart : listCartPurchase){
             List<CartAndProduct> listProductByCart = cartProductRepository.listProductByUserCart(cart.getId());
             listProductPurchase.addAll(listProductByCart);
         }
-        return listProductPurchase;
+
+
+        Comparator<CartAndProduct> compareByField = new Comparator<CartAndProduct>() {
+            @Override
+            public int compare(CartAndProduct o1, CartAndProduct o2) {
+                switch (sortField){
+                    case "id": return o1.getCart().getId().compareTo(o2.getCart().getId());
+                    case "quantity": return o1.getQuantity().compareTo(o2.getQuantity());
+                    case "checkoutDate": return o1.getCheckoutDate().compareTo(o2.getCheckoutDate());
+                }
+                return 0;
+            }
+        };
+
+        if(sortDir.equals("asc"))
+            Collections.sort(listProductPurchase, compareByField);
+        else
+            Collections.sort(listProductPurchase, compareByField.reversed());
+
+        final int start = (int) pageable.getOffset();
+        final int end = Math.min((start + pageable.getPageSize()), listProductPurchase.size());
+        Page<CartAndProduct> listPage = new PageImpl<>(listProductPurchase.subList(start,end), pageable, listProductPurchase.size());
+
+        return listPage;
     }
 
     @Override

@@ -33,12 +33,12 @@
                     <table class="table table-hover">
                         <thead>
                         <tr>
-                            <th>ID</th>
+                            <th th:replace="fragments :: column_link('id', 'ID')" >
                             <th>Sản phẩm</th>
-                            <th>Số lượng</th>
+                            <th th:replace="fragments :: column_link('quantity', 'Số lượng')"></th>
                             <th></th>
                             <th class="text-center">Giá</th>
-                            <th class="text-center">Tổng tiền</th>
+                            <th th:replace="fragments :: column_link('subTotal', 'Tổng tiền')"></th>
                             <th></th>
                         </tr>
                         </thead>
@@ -125,6 +125,8 @@
                     </table>
                 </div>
             </div>
+
+            <div th:replace="fragments :: pagination('/cart', 'sản phẩm')"></div>
         </div>
     </div>
 
