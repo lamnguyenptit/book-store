@@ -7,6 +7,7 @@ import com.example.login.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -39,6 +40,11 @@ public class UserController {
     @RequestMapping( "/user/home")
     public String viewMainPage(){
         return "home";
+    }
+
+    @GetMapping("")
+    public String viewDefault(){
+        return "redirect:/view";
     }
 
     @GetMapping( "/loginUser")

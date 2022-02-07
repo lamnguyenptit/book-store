@@ -5,42 +5,6 @@
 
 </head>
 <body>
-<!--<div th:fragment="modal_dialog" class="modal fade text-center" id="modalDialog">-->
-<!--    <div class="modal-dialog">-->
-<!--        <div class="modal-content">-->
-<!--            <div class="modal-header">-->
-<!--                <h4 class="modal-title" id="modalTitle">Warning</h4>-->
-<!--                <button type="button" class="close" data-dismiss="modal">&times;</button>-->
-<!--            </div>-->
-
-<!--            <div class="modal-body">-->
-<!--                <span id="modalBody"></span>-->
-<!--            </div>-->
-
-<!--            <div class="modal-footer">-->
-<!--                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>-->
-<!--            </div>-->
-
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->
-
-<!--<div th:fragment="modal_warning" class="modal fade" tabindex="-1" id="modalSuper" role="dialog">-->
-<!--    <div class="modal-dialog" role="document">-->
-<!--        <div class="modal-content">-->
-<!--            <div class="modal-header">-->
-<!--                <h5 class="modal-title" id="modalTitle"></h5>-->
-<!--            </div>-->
-<!--            <div class="modal-body">-->
-<!--                <p id="modalBody"></p>-->
-<!--            </div>-->
-<!--            <div class="modal-footer btn-action-group">-->
-<!--                <a class="btn btn-danger"></a>-->
-<!--                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->
 
 <div th:fragment="modal_dialog" class="modal fade text-center" id="modalDialog">
     <div class="modal-dialog">
@@ -59,6 +23,54 @@
             </div>
 
         </div>
+    </div>
+</div>
+
+<th th:fragment="column_link(fieldName, columnLabel)">
+    <a class="text-black" th:href="@{${moduleURL} + '/page/' +  ${currentPage} + '?sortField=' + ${fieldName} + '&sortDir=' + ${sortField != fieldName ? sortDir : reverseSortDir}} ">
+        [[${columnLabel}]]
+    </a>
+
+</th>
+
+
+<a th:fragment="page_link(moduleURL, pageNum, Label)"
+   class="page-link"
+   th:href="@{${moduleURL} + '/page/' + ${pageNum} + '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir}
+            + '&keyword=' + ${keyword}}">[[${Label}]]
+</a>
+
+
+<div th:fragment = "pagination(moduleURL, entityName)" th:remove = "tag">
+    <div class="text-center m-1" th:if="${totalItems > 0}">
+		<span>Hiển thị [[${entityName}]] # [[${startCount}]] đến [[${endCount}]] của
+			[[${totalItems}]]</span>
+    </div>
+
+    <div class="text-center m-1" th:unless="${totalItems > 0}">
+        <span>không [[${entityName}]] được tìm thấy</span>
+    </div>
+
+    <div th:if="${totalPages > 1}">
+        <nav>
+            <ul class="pagination justify-content-center flex-wrap">
+                <li th:class="${currentPage > 1 ? 'page-item' : 'page-item disabled'}">
+                    <a th:replace="fragments :: page_link(${moduleURL}, 1,'First')"></a>
+                </li>
+                <li th:class="${currentPage > 1 ? 'page-item' : 'page-item disabled'}">
+                    <a th:replace="fragments :: page_link(${moduleURL}, ${currentPage - 1},'Previous')"></a>
+                </li>
+                <li th:class="${currentPage != i ? 'page-item' : 'page-item active'}" th:each="i : ${#numbers.sequence(1,totalPages)}">
+                    <a th:replace="fragments :: page_link(${moduleURL}, ${i}, ${i})"></a>
+                </li>
+                <li th:class="${currentPage < totalPages ? 'page-item' : 'page-item disabled'}">
+                    <a th:replace="fragments :: page_link(${moduleURL}, ${currentPage + 1},'Next')"></a>
+                </li>
+                <li th:class="${currentPage < totalPages ? 'page-item' : 'page-item disabled'}">
+                    <a th:replace="fragments :: page_link(${moduleURL}, ${totalPages},'Last')"></a>
+                </li>
+            </ul>
+        </nav>
     </div>
 </div>
 

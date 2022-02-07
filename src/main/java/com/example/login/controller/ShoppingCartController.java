@@ -11,7 +11,11 @@ import com.example.login.repository.CartRepository;
 import com.example.login.service.ProductService;
 import com.example.login.service.ShoppingCartService;
 import com.example.login.service.UserService;
+import com.example.login.service.impl.ShoppingCartServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.security.authentication.RememberMeAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -34,15 +38,27 @@ public class ShoppingCartController {
     private ProductService productService;
 
     @GetMapping("/cart")
-    public String viewCart(Model model, HttpServletRequest request) throws UserNotFoundException {
+    public String viewFirstCart(Model model, HttpServletRequest request) throws UserNotFoundException {
+         return viewCart(model, request, "1", "id", "asc");
+    }
+
+    @GetMapping("/cart/page/{pageNum}")
+    public String viewCart(Model model, HttpServletRequest request,
+                           @PathVariable("pageNum") String pageNum, String sortField, String sortDir) throws UserNotFoundException {
         User user = getAuthenticatedUser(request);
         Cart cart = shoppingCartService.getCartByUser(user.getId());
+
         Boolean checkNullCart = true;
         if(cart == null){
             model.addAttribute("checkNullCart", checkNullCart);
             return "shopping-cart";
         }
-        List<CartAndProduct> listProductByUserCart = shoppingCartService.listProductByUserCart(cart.getId());
+
+        int currentPage = Integer.parseInt(pageNum);
+        Page<CartAndProduct> page = shoppingCartService.listProductByUserCart(cart.getId(), currentPage, sortField, sortDir);
+        List<CartAndProduct> listProductByUserCart = page.getContent();
+
+
         Integer totalItem = listProductByUserCart.size();
 
         if(totalItem <= 0 ){
@@ -53,21 +69,39 @@ public class ShoppingCartController {
         Float totalMoney = 0.0F;
 
         for(CartAndProduct products : listProductByUserCart){
-
             totalMoney += products.getSubTotal();
         }
         checkNullCart = false;
+
+        model.addAttribute("totalItems", page.getTotalElements());
+        model.addAttribute("totalPages", page.getTotalPages());
+        model.addAttribute("currentPage", currentPage);
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
         model.addAttribute("checkNullCart", checkNullCart);
         model.addAttribute("listProductByUserCart", listProductByUserCart);
         model.addAttribute("totalMoney", totalMoney);
+        model.addAttribute("keyword", null);
+        model.addAttribute("moduleURL", "/cart");
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+        long startCount = (currentPage - 1) * ShoppingCartServiceImpl.PRODUCT_PER_PAGE;
+        long endCount = Math.min(startCount + ShoppingCartServiceImpl.PRODUCT_PER_PAGE, page.getTotalPages());
+        model.addAttribute("startCount", startCount);
+        model.addAttribute("endCount", endCount);
         return "shopping-cart";
     }
 
 
     public User getAuthenticatedUser(HttpServletRequest request) throws UserNotFoundException {
-        String userEmail = request.getUserPrincipal().getName();
+        Object principal = request.getUserPrincipal();
+        String userEmail = null;
+        if(principal == null) userEmail = null;
+        else
+            userEmail = request.getUserPrincipal().getName();
+
         if(userEmail == null)
             throw new UserNotFoundException("Không tồn tại khách hàng!");
+
         return userService.getUserByEmail(userEmail);
     }
 
@@ -173,19 +207,51 @@ public class ShoppingCartController {
         }
     }
 
+
     @GetMapping("/purchase")
-    public String viewPurchaseOrder(Model model, HttpServletRequest request){
+    public String firstPagePurchaseOrder(HttpServletRequest request, Model model){
+
+        return viewPurchaseOrder(model, request, "1", "checkoutDate", "desc" );
+    }
+
+    @GetMapping("/purchase/page/{pageNum}")
+    public String viewPurchaseOrder(Model model, HttpServletRequest request,
+                                    @PathVariable("pageNum") String pageNum, String sortField,
+                                    String sortDir){
        try{
+           int currentPage = Integer.parseInt(pageNum);
            User user = getAuthenticatedUser(request);
            Boolean checkNullPurchaseOrder = true;
-           List<CartAndProduct> listProductPurchase = shoppingCartService.listProductPurchase(user.getId());
+           Page<CartAndProduct> page = shoppingCartService.listProductPurchase(user.getId(), currentPage, sortField, sortDir);
+           List<CartAndProduct> listProductPurchase = page.getContent();
+
            if(listProductPurchase == null){
                model.addAttribute("checkNullPurchaseOrder", checkNullPurchaseOrder);
                return "purchase_order";
            }
+
+
+
            checkNullPurchaseOrder = false;
-           model.addAttribute("checkNullPurchaseOrder", checkNullPurchaseOrder);
+           model.addAttribute("totalPages", page.getTotalPages());
+           model.addAttribute("totalItems", page.getTotalElements());
+           model.addAttribute("currentPage", currentPage);
            model.addAttribute("listProductPurchase", listProductPurchase);
+           model.addAttribute("sortField", sortField);
+           model.addAttribute("sortDir", sortDir);
+           model.addAttribute("checkNullPurchaseOrder", checkNullPurchaseOrder);
+           model.addAttribute("moduleURL", "/purchase");
+           model.addAttribute("keyword", null);
+           model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+
+           int startCount =  ShoppingCartServiceImpl.PRODUCT_PER_PAGE * ( currentPage - 1) + 1;
+           model.addAttribute("startCount",startCount);
+
+           long endCount = startCount + ShoppingCartServiceImpl.PRODUCT_PER_PAGE + 1;
+           if(endCount > page.getTotalElements())
+               endCount = page.getTotalElements();
+           model.addAttribute("endCount", endCount);
+
            return "purchase_order";
        }catch(UserNotFoundException une){
            return "Bạn cần phải đăng nhập";

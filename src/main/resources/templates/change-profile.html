@@ -27,6 +27,10 @@
                 <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger"></span>
             </div>
             <div class="mb-3">
+                <input type="password" th:field="*{password}" class="form-control" placeholder="thay doi mat khau">
+<!--                <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger"></span>-->
+            </div>
+            <div class="mb-3">
                 <input type="text" th:field="*{name}" class="form-control" placeholder="Name">
                 <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></span>
             </div>

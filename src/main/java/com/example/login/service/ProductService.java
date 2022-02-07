@@ -14,7 +14,7 @@ public interface ProductService {
 
     Product getProduct(String id) throws ProductNotFoundException;
 
-    Page<Product> searchProduct(String keyword);
+    Page<Product> searchProduct(String keyword, int currentPage);
 
     List<ProductDto> findAllProduct();
 
