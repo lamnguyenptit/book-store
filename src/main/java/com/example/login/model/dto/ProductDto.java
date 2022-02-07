@@ -8,6 +8,7 @@ import lombok.ToString;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.util.Date;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -49,7 +50,7 @@ public class ProductDto {
     private Float price;
 
     @Valid
-    private CategoryDto category;
+    private Set<CategoryDto> category;
 
     @Valid
     private PublisherDto publisher;

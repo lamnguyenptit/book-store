@@ -29,6 +29,11 @@ public class CategoryServiceImpl implements CategoryService {
         return convertToDtos(repo.listAllCategoryEnable());
     }
 
+    @Override
+    public CategoryDto findById(int id){
+        return convertToDto(repo.findById(id).orElse(null));
+    }
+
     public CategoryDto convertToDto(Category category){
         if (category == null)
             return null;

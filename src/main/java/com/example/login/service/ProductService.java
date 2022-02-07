@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface ProductService {
 
-    Page<Product> listProductByCategory(Integer catId);
+    List<Product> listProductByCategory(Integer catId);
 
     Product getProduct(String id) throws ProductNotFoundException;
 
@@ -30,4 +30,10 @@ public interface ProductService {
     void updateProduct(ProductDto productDto);
 
 
+
+    Integer getQuantityProduct(Integer productId);
+
+    List<Product> listProductSameCategory(Integer productId);
+
+    List<Product> listProductSameMoney(int productId);
 }

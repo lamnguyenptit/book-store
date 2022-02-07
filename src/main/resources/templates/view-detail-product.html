@@ -20,7 +20,7 @@
     <div class="row">
         <div class="col-sm">
             <div>
-                <img th:src="@{'/product-images/' + ${productDetail.id} + '/'+ ${productDetail.image}}">
+                <img th:src="@{'/product-images/' + ${productDetail.image}}">
             </div>
         </div>
         <div class="col-sm">
@@ -68,11 +68,47 @@
             <div th:utext="${productDetail.description}"></div>
         </div>
     </div>
+
+    <div class="row">
+        <h2>Danh sách sản phẩm cùng thể loại</h2>
+        <div class="col-sm-2" th:each="prod : ${listProductSameCategory}">
+            <div>
+                <img th:src="@{'/product-images/'+ ${prod.image}}" width="80">
+            </div>
+            <div>
+                <a th:href="@{'/p/' + ${prod.id}}">[[${prod.name}]]</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <h2>Danh sách sản phẩm cùng giá tiền</h2>
+        <div class="col-sm-2" th:each="prod : ${listProductSameMoney}">
+            <div>
+                <img th:src="@{'/product-images/'+ ${prod.image}}" width="80">
+            </div>
+            <div>
+                <a th:href="@{'/p/' + ${prod.id}}">[[${prod.name}]]</a>
+            </div>
+        </div>
+    </div>
     <div th:replace="fragments :: modal_dialog"></div>
 </div>
 <script type="text/javascript">
     contextPath = "[[@{/}]]";
     productId = "[[${productDetail.id}]]";
+    pieceAvailable = "[[${productDetail.quantity}]]";
+
+    // $('.equipCatValidation').on('keydown keyup change', function(e){
+    //     if (parseInt($(this).val()) > pieceAvailable
+    //         && e.keyCode !== 46 // keycode for delete
+    //         && e.keyCode !== 8 // keycode for backspace
+    //     ) {
+    //         e.preventDefault();
+    //         alert("Nhập số lượng nhỏ hơn số lượng còn lại!");
+    //         $(this).val(1);
+    //     }
+    // });
 </script>
 <script type="text/javascript" th:src="@{/js/shopping_cart.js}"></script>
 

@@ -1,6 +1,7 @@
 package com.example.login.service;
 
 import com.example.login.error.ProductNotFoundException;
+import com.example.login.error.ShoppingCartException;
 import com.example.login.model.Cart;
 import com.example.login.model.CartAndProduct;
 import com.example.login.model.Product;
@@ -13,7 +14,7 @@ public interface ShoppingCartService {
 
     public List<CartAndProduct> listProductByUserCart(Integer cartId);
 
-    public Integer updateQuantity(Integer userId, Integer productId, Integer quantity);
+    public Integer updateQuantity(Integer userId, Integer productId, Integer quantity) throws ShoppingCartException;
 
     public CartAndProduct findProductByCart(Integer cartId, Integer productId);
 
@@ -24,4 +25,6 @@ public interface ShoppingCartService {
     void checkOutCart(int userId) throws ProductNotFoundException;
 
     List<CartAndProduct> listProductPurchase(int userId);
+
+    int getQuantityProductInCart(int userId, int productId);
 }

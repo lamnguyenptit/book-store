@@ -16,18 +16,18 @@ import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
+import java.beans.PropertyEditorSupport;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -70,36 +70,28 @@ public class ProductController {
         return "admin/list-product";
     }
 
-//    @PostMapping("/admin/product")
-//    public String searchProduct(Model model, @RequestParam("page") Optional<Integer> page, @RequestParam(name = "keyword", required = false)String name){
-//        if (!StringUtils.hasText(name))
-//            return "redirect:/admin/product";
-//        int currentPage = page.orElse(1);
-//        Page<ProductDto> productDtos = productService.findProductsByName(PageRequest.of(currentPage - 1, PRODUCTS_PER_PAGE), name);
-//        model.addAttribute("products", productDtos);
-//        int totalPage = productDtos.getTotalPages();
-//        if (totalPage > 0){
-//            List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPage).boxed().collect(Collectors.toList());
-//            model.addAttribute("pageNumbers", pageNumbers);
-//        }
-//        model.addAttribute("keyword", name);
-//        return "admin/list-product";
-//    }
-
     @GetMapping("/admin/add-product")
     public String showAddProductPage(Model model){
         model.addAttribute("product", new ProductDto());
-
-        List<CategoryDto> categoryDtos = categoryService.findAllCategory();
-        model.addAttribute("category", categoryDtos);
-
-        List<PublisherDto> publisherDtos = publisherService.findAllPublisher();
-        model.addAttribute("publisher", publisherDtos);
+        model.addAttribute("listCategoryId", new HashSet<Integer>());
         return "admin/add-product";
     }
 
+    @ModelAttribute("categories")
+    public List<CategoryDto> getCategories(){
+        return categoryService.findAllCategory();
+    }
+
+    @ModelAttribute("publishers")
+    public List<PublisherDto> getPublishers(){
+        return publisherService.findAllPublisher();
+    }
+
     @PostMapping(path = "/admin/add-product", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public String processAddProduct(@Valid @ModelAttribute(name = "product")ProductDto productDto,BindingResult bindingResult, Model model, @RequestPart("img") MultipartFile multipartFile) throws IOException {
+    public String processAddProduct(@Valid @ModelAttribute(name = "product")ProductDto productDto, BindingResult bindingResult,
+                                    @ModelAttribute(name = "listCategoryId")HashSet<Integer> listCategoryId, Model model,
+                                    @RequestPart("img") MultipartFile multipartFile) throws IOException {
+        System.out.println(listCategoryId.size());
         if (bindingResult.hasErrors()){
             return "admin/add-product";
         }
@@ -118,8 +110,8 @@ public class ProductController {
                 return "admin/add-product";
             }
         }
-        productDto.setCreateTime(Timestamp.valueOf(LocalDateTime.now()));
-        productService.createProduct(productDto);
+//        productDto.setCreateTime(Timestamp.valueOf(LocalDateTime.now()));
+//        productService.createProduct(productDto);
         return "redirect:/admin/add-product?success";
     }
 

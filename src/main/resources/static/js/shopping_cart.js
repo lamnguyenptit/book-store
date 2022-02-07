@@ -36,13 +36,17 @@ function showModalWarning(title, body){
 
 $(document).ready(function(){
     $("#buttonAdd2Cart").on("click", function(evt){
-        evt.preventDefault();
-        addToCart();
+        quantity = $("#quantity" + productId).val();
+        if( parseInt(quantity) == 0){
+            evt.preventDefault();
+            showModalWarning("Cảnh báo", "Số lượng phải lớn hơn 0!");
+        }else{
+            addToCart(quantity);
+        }
     })
 })
 
-function addToCart(){
-    quantity = $("#quantity" + productId).val();
+function addToCart(quantity){
     url =  contextPath + "cart/add/" + productId + "/" +quantity;
     $.ajax({
         method: "POST",

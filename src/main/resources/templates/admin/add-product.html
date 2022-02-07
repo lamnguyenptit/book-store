@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:form="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
@@ -54,14 +54,14 @@
         </div>
         <div class="mb-3">
             <label>Category</label>
-            <select class="form-select" th:field="*{category.id}">
-                <option th:each="category:${category}" th:value="${category.id}" th:utext="${category.name}"></option>
+            <select class="form-control" multiple size="3" name="listCategoryId" id="listCategoryId">
+                <option th:each="c:${categories}" th:value="${c.id}" th:utext="${c.name}"></option>
             </select>
         </div>
         <div class="mb-3">
             <label>Publisher</label>
             <select class="form-select" th:field="*{publisher.id}">
-                <option th:each="publisher:${publisher}" th:value="${publisher.id}" th:utext="${publisher.name}"></option>
+                <option th:each="publisher:${publishers}" th:value="${publisher.id}" th:utext="${publisher.name}"></option>
             </select>
         </div>
         <div class="mb-3">
