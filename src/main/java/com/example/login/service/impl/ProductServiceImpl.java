@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class ProductServiceImpl implements ProductService {
 
+    public static final int PRODUCT_SEARCH = 2;
+
     @Autowired
     private ProductRepository repo;
 
@@ -52,8 +54,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<Product> searchProduct(String keyword) {
-        Pageable pageable = PageRequest.of(0,10);
+    public Page<Product> searchProduct(String keyword, int currentPage) {
+        Pageable pageable = PageRequest.of(currentPage - 1,PRODUCT_SEARCH);
         return repo.findAllProduct(keyword, pageable);
     }
 

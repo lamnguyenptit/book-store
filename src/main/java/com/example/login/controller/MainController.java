@@ -6,6 +6,7 @@ import com.example.login.model.Product;
 import com.example.login.repository.CategoryRepository;
 import com.example.login.service.CategoryService;
 import com.example.login.service.ProductService;
+import com.example.login.service.impl.ProductServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.repository.query.Param;
@@ -56,15 +57,28 @@ public class MainController {
     }
 
     @GetMapping("/search")
-    public String search(@Param("keyword") String keyword, Model model){
-        Page<Product> pageProducts = productService.searchProduct(keyword);
-        List<Product> listProducts = pageProducts.getContent();
-        Integer totalItem = Math.toIntExact(pageProducts.getTotalElements());
+    public String firstPageSearch(Model model, @Param("keyword") String keyword){
+        return search(model, "1", keyword);
+    }
 
-        model.addAttribute("pageProducts",pageProducts );
-        model.addAttribute("totalItems", totalItem);
+    @GetMapping("/search/page/{pageNum}")
+    public String search(Model model, @PathVariable("pageNum") String pageNum, String keyword){
+        int currentPage = Integer.parseInt(pageNum);
+
+        Page<Product> page = productService.searchProduct(keyword, currentPage);
+        List<Product> listProducts = page.getContent();
+
+        model.addAttribute("totalPages",page.getTotalPages() );
+        model.addAttribute("totalItems", page.getTotalElements());
         model.addAttribute("keyword", keyword);
+        model.addAttribute("currentPage", currentPage);
         model.addAttribute("listProducts", listProducts);
+        model.addAttribute("moduleURL", "/search");
+
+        int startCount = (currentPage - 1) * ProductServiceImpl.PRODUCT_SEARCH;
+        int endCount = Math.min(startCount + ProductServiceImpl.PRODUCT_SEARCH, (int)page.getTotalElements());
+        model.addAttribute("startCount", startCount);
+        model.addAttribute("endCount", endCount);
         return "search-result";
     }
 
