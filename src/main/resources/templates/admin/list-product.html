@@ -12,7 +12,13 @@
 <div th:replace="admin/fragment :: header_menu"></div>
 <div class="container-fluid">
     <h1 style="text-align: center">List product</h1>
-    <a class="btn btn-success" th:href="@{/admin/add-product}">Add product</a>
+    <form class="form-check-inline" th:action="@{/admin/product}">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Search by name" th:value="${keyword}" name="keyword">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search me-2"></i>Search</button>
+        </div>
+    </form>
+    <div class="mb-3"><a class="btn btn-success" th:href="@{/admin/add-product}">+ Add product</a></div>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -21,40 +27,202 @@
                 <th scope="col">Cost</th>
                 <th scope="col">Discount percent</th>
                 <th scope="col">Enabled</th>
+                <th scope="col">In stock</th>
                 <th scope="col">Description</th>
                 <th scope="col">Image</th>
-                <th scope="col">In stock</th>
                 <th scope="col">Quantity</th>
                 <th scope="col">Price</th>
                 <th scope="col">Category</th>
                 <th scope="col">Publisher</th>
-                <th scope="col">Function</th>
+                <th scope="col">Actions</th>
             </tr>
         </thead>
         <tbody>
-            <tr th:each="product, state : ${products}">
+            <tr th:id="${product.id}" th:each="product, state : ${products}">
                 <th scope="row" th:utext="${state.count}"></th>
                 <td th:utext="${product.name}"></td>
                 <td th:utext="${product.cost}"></td>
                 <td th:utext="${product.discountPercent}"></td>
                 <td th:utext="${product.enabled}"></td>
+                <td th:utext="${product.inStock}"></td>
                 <td th:utext="${product.description}"></td>
                 <td><img width="100" height="100" alt="image" th:src="@{'/product-images/' + ${product.image}}"></td>
-                <td th:utext="${product.inStock}"></td>
                 <td th:utext="${product.quantity}"></td>
                 <td th:utext="${product.price}"></td>
-                <td th:utext="${product.category.name}"></td>
+                <td th:each="category:${product.category}" >
+                    <div th:utext="${category.name}">
+                    </div>
+                </td>
                 <td th:utext="${product.publisher.name}"></td>
                 <td>
                     <div class="btn-group-vertical">
-                        <button class="btn btn-info">Edit</button>
-                        <button class="btn btn-danger">Delete</button>
+                        <a type="button" class="btn btn-info" th:href="@{'/admin/update-product/' + ${product.id}}">Edit</a>
+<!--                        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#dialog1">Edit</button>-->
+                        <input type="button" th:name="${product.id}" class="btn btn-danger" value="Delete" onclick="deleteProductViaAjax(this)">
                     </div>
                 </td>
             </tr>
         </tbody>
     </table>
+<!--    Pagination-->
+    <nav aria-label="Page navigation" th:if="${products.totalPages > 0}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${products.number == 0 ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{'/admin/product'(page=1, keyword=${keyword})}">First</a>
+            </li>
+            <li class="page-item" th:classappend="${!products.hasPrevious() ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{'/admin/product'(page=${products.number}, keyword=${keyword})}">Previous</a>
+            </li>
+<!--            <th:block th:each="pageNumber : ${pageNumbers}">-->
+<!--                <li class="page-item">-->
+<!--                    <a class="page-link" th:href="@{/admin/product(page=${pageNumber}, size=${products.size})}" th:text="${pageNumber}"></a>-->
+<!--                </li>-->
+<!--            </th:block>-->
+            <th:block th:if="${products.totalPages <= 5}">
+                <li th:each="pageNumber : ${pageNumbers}" class="page-item" th:classappend="${pageNumber == products.number + 1 ? 'active' : ''}">
+                    <a class="page-link" th:href="@{/admin/product(page=${pageNumber}, keyword=${keyword})}" th:text="${pageNumber}"></a>
+                </li>
+            </th:block>
+
+            <th:block th:if="${products.totalPages > 5}">
+                <th:block th:if="${products.number + 1 <= 3 || products.number + 1 > products.totalPages - 3}">
+                    <li th:each="pageNumber : ${#numbers.sequence(1, 3)}" class="page-item" th:classappend="${pageNumber == products.number + 1 ? 'active' : ''}">
+                        <a class="page-link" th:href="@{/admin/product(page=${pageNumber}, keyword=${keyword})}" th:text="${pageNumber}"></a>
+                    </li>
+                    <a class="page-link" th:if="${products.number} + 1 <= 3" th:href="@{/admin/product(page=4)}" th:text="..."></a>
+                    <a class="page-link" th:if="${products.number} + 1 > ${products.totalPages} - 3" th:href="@{/admin/product(page=${products.totalPages} - 3)}" th:text="..."></a>
+                    <li th:each="pageNumber : ${#numbers.sequence(products.totalPages - 2, products.totalPages)}" class="page-item" th:classappend="${pageNumber == products.number + 1 ? 'active' : ''}">
+                        <a class="page-link" th:href="@{/admin/product(page=${pageNumber}, keyword=${keyword})}" th:text="${pageNumber}"></a>
+                    </li>
+                </th:block>
+                <th:block th:if="${products.number + 1 > 3 && products.number + 1 < products.totalPages - 2}">
+                    <a class="page-link" th:href="@{/admin/product(page=${products.number} + 1 - 3, keyword=${keyword})}" th:text="..."></a>
+                    <li th:each="pageNumber : ${#numbers.sequence(products.number + 1 - 2, products.number + 1 + 2)}" class="page-item" th:classappend="${pageNumber == products.number + 1 ? 'active' : ''}">
+                        <a class="page-link" th:href="@{/admin/product(page=${pageNumber}, keyword=${keyword})}" th:text="${pageNumber}"></a>
+                    </li>
+                    <a class="page-link" th:href="@{/admin/product(page=${products.number} + 1 + 3, keyword=${keyword})}" th:text="..."></a>
+                </th:block>
+            </th:block>
+
+            <li class="page-item" th:classappend="${!products.hasNext() ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{'/admin/product'(page=${products.number + 2}, keyword=${keyword})}">Next</a>
+            </li>
+            <li class="page-item" th:classappend="${products.number + 1 == products.totalPages ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{'/admin/product'(page=${products.totalPages}, keyword=${keyword})}">Last</a>
+            </li>
+        </ul>
+    </nav>
+<!--    End of pagination-->
     <div th:replace="admin/fragment :: footer_menu"></div>
 </div>
+
+<!--//// code modal-->
+<!--<div class="modal fade" id="dialog1" role="dialog" aria-hidden="true">-->
+<!--    <div class="modal-dialog modal-xl modal-dialog-centered">-->
+<!--        <div class="modal-content">-->
+
+<!--            <div class="modal-header">-->
+<!--                <h5 class="modal-title">Update product</h5>-->
+<!--                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
+<!--            </div>-->
+<!--            <form class="information" method="post" th:object="${product}" th:action="@{/admin/update-product}" enctype="multipart/form-data">-->
+<!--            <div class="modal-body">-->
+<!--                    <div class="mb-3">-->
+<!--                        <label>Image:</label>-->
+<!--                        <img id="image" width="100" height="100" alt="...">-->
+<!--                        <input type="file" name="img" accept="image/png, image/jpeg" multiple="multiple" onchange="chooseFile(this)">-->
+<!--                        <div th:if="${messageFile}"><span th:text="${messageFile}" class="text-danger"></span></div>-->
+<!--                    </div>-->
+<!--                    <div class="mb-3">-->
+<!--                        <label>Name</label>-->
+<!--                        <input type="text" th:field="*{name}" class="form-control">-->
+<!--                        <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></span>-->
+<!--                    </div>-->
+<!--                <div class="mb-3">-->
+<!--                    <div>Status:</div>-->
+<!--                    <div class="form-check form-switch">-->
+<!--                        <label for="enabled">enable</label>-->
+<!--                        <input class="form-check-input" type="checkbox" th:field="*{enabled}" role="switch" id="enabled">-->
+<!--                    </div>-->
+<!--                    <div class="form-check form-switch">-->
+<!--                        <label for="inStock">in stock</label>-->
+<!--                        <input class="form-check-input" type="checkbox" th:field="*{inStock}" role="switch" id="inStock">-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                    <div class="mb-3">-->
+<!--                        <label>Cost</label>-->
+<!--                        <input type="text" th:field="*{cost}" class="form-control">-->
+<!--                        <span th:if="${#fields.hasErrors('cost')}" th:errors="*{cost}" class="text-danger"></span>-->
+<!--                    </div>-->
+<!--                    <div class="mb-3">-->
+<!--                        <label>Price</label>-->
+<!--                        <input type="text" th:field="*{price}" class="form-control">-->
+<!--                        <span th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="text-danger"></span>-->
+<!--                    </div>-->
+<!--                    <div class="mb-3">-->
+<!--                        <label>Discount percent</label>-->
+<!--                        <input type="text" size="15" th:field="*{discountPercent}" class="form-control">-->
+<!--                        <span th:if="${#fields.hasErrors('discountPercent')}" th:errors="*{discountPercent}" class="text-danger"></span>-->
+<!--                    </div>-->
+<!--                    <div class="mb-3">-->
+<!--                        <label>Category</label>-->
+<!--                        <select class="form-select" th:field="*{category.id}">-->
+<!--                            <option th:each="category:${category}" th:value="${category.id}" th:utext="${category.name}"></option>-->
+<!--                        </select>-->
+<!--                    </div>-->
+<!--                    <div class="mb-3">-->
+<!--                        <label>Publisher</label>-->
+<!--                        <select class="form-select" th:field="*{publisher.id}">-->
+<!--                            <option th:each="publisher:${publisher}" th:value="${publisher.id}" th:utext="${publisher.name}"></option>-->
+<!--                        </select>-->
+<!--                    </div>-->
+<!--                    <div class="mb-3">-->
+<!--                        <label>Quantity</label>-->
+<!--                        <input type="text" th:field="*{quantity}" class="form-control">-->
+<!--                        <span th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}" class="text-danger"></span>-->
+<!--                    </div>-->
+<!--                    <div class="mb-3">-->
+<!--                        <label>Description</label>-->
+<!--                        <textarea rows="5" th:field="*{description}" class="form-control"></textarea>-->
+<!--                        <span th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="text-danger"></span>-->
+<!--                    </div>-->
+<!--            </div>-->
+<!--            <div class="modal-footer">-->
+<!--                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Exit</button>-->
+<!--                <div><input class="btn btn-primary" type="submit" value="Save"></div>-->
+<!--            </div>-->
+<!--                <script th:inline="javascript" th:if="${#fields.hasErrors('global')}">-->
+<!--                    var myModal = new bootstrap.Modal(document.getElementById('dialog1'))-->
+<!--                    myModal.show()-->
+<!--                </script>-->
+<!--            </form>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+<!--//// end code modal-->
+
+<script type="text/javascript">
+    function deleteProductViaAjax(e){
+        if (confirm('Do you want to delete this product ?')){
+            let id = e.name
+            $.ajax({
+                type: "GET",
+                url: "delete-product",
+                data: {
+                    id: id
+                },
+                timeout: 100000,
+                success: function () {
+                    $("#"+id).remove()
+                },
+                error: function (e) {
+                    console.log("ERROR: ", e)
+                }
+            })
+        }
+        else
+            return false
+    }
+</script>
 </body>
 </html>

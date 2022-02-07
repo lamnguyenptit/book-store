@@ -24,7 +24,7 @@ public class UserDto {
     private String password;
 
     @Size(max = 50, message = "Name must less than 50 characters")
-    @NotBlank(message = "Name can't empty")
+    @NotBlank(message = "Name cannot empty")
     private String name;
 
     @Pattern(regexp = "^[\\d]*$", message = "Phone must be digits")

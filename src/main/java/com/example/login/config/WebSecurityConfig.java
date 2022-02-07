@@ -86,7 +86,54 @@ public class WebSecurityConfig{
         }
     }
 
+    @Configuration
+    public static class UserConfigurationAdapter extends WebSecurityConfigurerAdapter {
+        public UserConfigurationAdapter() {
+            super();
+        }
 
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) {
+            auth.authenticationProvider(authenticationProvider());
+        }
 
+        @Override
+        protected void configure(HttpSecurity http) {
+            try {
+                http
+                        .authorizeRequests()
+                        .antMatchers("/loginAdmin","/login-google/**","/register/**", "/forgot-password/**", "/reset-password/**", "/oauth/**", "/view/**")
+                        .permitAll()
+                        .antMatchers("/user/**")
+                        .hasAuthority("USER")
+                        .anyRequest()
+                        .authenticated()
 
+                        .and()
+                        .formLogin()
+                        .loginPage("/loginUser")
+                        .loginProcessingUrl("/user_login")
+                        .failureUrl("/loginUser?error")
+                        .defaultSuccessUrl("/user/home", true)
+                        .permitAll()
+
+                        .and()
+                        .logout()
+                        .logoutUrl("/user_logout")
+                        .logoutSuccessUrl("/loginUser?logout")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID")
+
+                        .and()
+                        .exceptionHandling()
+                        .accessDeniedPage("/403")
+
+                        .and()
+                        .csrf().disable();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

@@ -15,7 +15,7 @@
             <h1>FakeBookShop Admin Control</h1>
         </div>
         <div class="full-details">
-            <table clas="table table-bordered">
+            <table class="table table-bordered">
                 <thead class="thead-dark">
                     <tr>
                         <th>User ID</th>
@@ -23,9 +23,6 @@
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Address</th>
-                        <th>Company</th>
-                        <th>School</th>
-                        <th>Degree</th>
                         <th>Locked</th>
                         <th>Enable</th>
                     </tr>
@@ -35,16 +32,8 @@
                         <td>[[${user.id}]]</td>
                         <td>[[${user.name}]]</td>
                         <td>[[${user.email}]]</td>
-    <!--                    <td th:if="${user.phone ne null}">[[${user.phone}]]</td>-->
-    <!--                    <td th:if="${user.address ne null}">[[${user.address}]]</td>-->
-    <!--                    <td th:if="${user.companies != null}">[[${user.companies}]]</td>-->
-    <!--                    <td th:if="${user.schools ne null}">[[${user.schools}]]</td>-->
-    <!--                    <td th:if="${user.degrees ne null}">[[${user.degrees}]]</td>-->
                         <td>[[${user.phone}]]</td>
                         <td>[[${user.address}]]</td>
-                        <td>[[${user.companies}]]</td>
-                        <td>[[${user.schools}]]</td>
-                        <td>[[${user.degrees}]]</td>
                         <td>[[${user.locked}]]</td>
                         <td>[[${user.enabled}]]</td>
                         <td>
@@ -63,8 +52,8 @@
                 </tbody>
             </table>
         </div>
+        <div th:replace="admin/fragment :: footer_menu"></div>
     </div>
-    <div th:replace="admin/fragment :: footer_menu"></div>
 
 <!--//// code modal-->
     <div class="modal fade text-center" id="confirmModal">

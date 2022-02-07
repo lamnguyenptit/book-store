@@ -10,4 +10,6 @@ public interface CategoryService {
     List<Category> listAllCategoryEnable();
 
     List<CategoryDto> findAllCategory();
+
+    CategoryDto findById(int id);
 }

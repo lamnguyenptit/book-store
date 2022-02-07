@@ -16,5 +16,4 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
      */
     @Query("SELECT c FROM Category c WHERE c.enabled = true")
     List<Category> listAllCategoryEnable();
-
 }

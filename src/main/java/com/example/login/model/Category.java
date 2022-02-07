@@ -31,5 +31,4 @@ public class Category extends IdBaseEntity{
     @ManyToMany(mappedBy = "categories")
     private List<Product> productSet;
 
-
 }

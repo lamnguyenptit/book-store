@@ -19,7 +19,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class Product extends IdBaseEntity{
 
-    @Column(length = 100, unique = true)
+    @Column(length = 100)
     private String name;
 
     private Float cost;
@@ -71,7 +71,7 @@ public class Product extends IdBaseEntity{
         return this.price;
     }
 
-    public Product(String name, Float cost, Date createTime, Float discountPercent, boolean enabled, String description, String image, boolean inStock, int quantity, Float price, Category category, Publisher publisher) {
+    public Product(String name, Float cost, Date createTime, Float discountPercent, boolean enabled, String description, String image, boolean inStock, int quantity, Float price, Set<Category> categories, Publisher publisher) {
         this.name = name;
         this.cost = cost;
         this.createTime = createTime;
@@ -82,6 +82,7 @@ public class Product extends IdBaseEntity{
         this.inStock = inStock;
         this.quantity = quantity;
         this.price = price;
+        this.categories = categories;
         this.publisher = publisher;
     }
 

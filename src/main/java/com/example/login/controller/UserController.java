@@ -163,7 +163,7 @@ public class UserController {
             if (tail.equals(".jpg") || tail.equals(".png")){
                 String imageName = param.getId() + ".jpg";
                 String filePath1 = Paths.get("").toAbsolutePath() + "/target/classes/static/images/";
-                String filePath2 = Paths.get("").toAbsolutePath() + "/src/main/resources/images/";
+                String filePath2 = Paths.get("").toAbsolutePath() + "/src/main/resources/static/images/";
                 param.setImage("images/" + imageName);
 //                Files.deleteIfExists(Paths.get(filePath + param.getId() + ".jpg"));
                 multipartFile.transferTo(Paths.get(filePath1 + imageName));

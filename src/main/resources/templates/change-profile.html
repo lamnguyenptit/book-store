@@ -71,7 +71,8 @@
                 </div>
             </div>
             <div id="ajax-add-school"></div>
-            <input type="hidden" id="index" th:value="${user.schools.size()}">
+            <input th:if="${user.schools == null}" type="hidden" id="index" th:value="0">
+            <input th:if="${user.schools != null}" type="hidden" id="index" th:value="${user.schools.size()}">
             <div th:if="${#fields.hasErrors('global')}" class="text-danger">
                 <div th:each="err : ${#fields.errors('global')}" th:text="${err}" class="text-danger"></div>
             </div>
