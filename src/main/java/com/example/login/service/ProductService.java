@@ -13,9 +13,9 @@ public interface ProductService {
 
     List<Product> listProductByCategory(Integer catId);
 
-    Product getProduct(String id) throws ProductNotFoundException;
+    Product getProduct(int id) throws ProductNotFoundException;
 
-    Page<Product> searchProduct(String keyword);
+    Page<Product> searchProduct(String keyword, int currentPage);
 
     Page<ProductDto> findAllProduct(Pageable pageable);
 
@@ -36,4 +36,8 @@ public interface ProductService {
     List<Product> listProductSameCategory(Integer productId);
 
     List<Product> listProductSameMoney(int productId);
+
+    Boolean checkProductIsDelete(int productId);
+
+    ProductDto convertToProductDto(Product product);
 }

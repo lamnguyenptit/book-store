@@ -1,10 +1,13 @@
 package com.example.login.model.dto;
 
-import lombok.*;
-import org.hibernate.validator.constraints.Range;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.validation.Valid;
 import javax.validation.constraints.*;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
@@ -12,9 +15,14 @@ import java.util.Set;
 @Setter
 @ToString
 @NoArgsConstructor
-@EqualsAndHashCode
-public class ProductDto {
-    private int id;
+public class ProductDto implements Serializable {
+    private static final long serialVersionUID = -3822831474371253454L;
+
+    private Integer id;
+
+    public ProductDto(int id){
+        this.id = id;
+    }
 
     @Size(min = 1, max = 50, message = "Name must between 1 and 50 characters")
     private String name;
@@ -57,4 +65,42 @@ public class ProductDto {
 
     @Valid
     private PublisherDto publisher;
+
+    private Integer orderQuantity;
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ProductDto other = (ProductDto) obj;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        return true;
+    }
+
+    public Float getProductPrice(){
+        if(discountPercent > 0) {
+            return price * ((100 - discountPercent) / 100);
+        }
+        return this.price;
+    }
+
+    public Float getSubTotal(){
+        return getProductPrice() * orderQuantity;
+    }
 }

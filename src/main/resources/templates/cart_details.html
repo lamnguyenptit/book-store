@@ -1,0 +1,92 @@
+<div class="modal-header">
+    <h4 class="modal-title">Chi tiết đơn hàng</h4>
+    <button type="button" class="close" data-dismiss="modal">&times</button>
+</div>
+
+<div>
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="overview-tab" data-toggle="tab" href="#overview" role="tab">Tổng quát</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="products-tab" data-toggle="tab" href="#products" role="tab">Các sản phẩm</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active p-3" id="overview" role="tabpanel">
+            <form>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">ID đơn hàng:</label>
+                    <div class="col-sm-10">
+                        <input type="text" readonly class="form-control" th:value="'PO'+${userCartDto.cartId}">
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">Khách hàng:</label>
+                    <div class="col-sm-10">
+                        <input type="text" readonly class="form-control" th:value="${userCartDto.name}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">Địa chỉ:</label>
+                    <div class="col-sm-10">
+                        <input type="text" readonly class="form-control" th:value="${userCartDto.address}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">Điện thoại:</label>
+                    <div class="col-sm-10">
+                        <input type="text" readonly class="form-control" th:value="${userCartDto.phone}">
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">Tổng tiền</label>
+                    <div class="col-sm-10">
+                        <div th:replace="fragments::format_currency(${userCartDto.totalMoney})"></div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">Ngày đặt hàng:</label>
+                    <div class="col-sm-10">
+                        <div th:replace="fragments::format_time(${userCartDto.checkoutDate})"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="tab-pane fade p-3" id="products" role="tabpanel">
+            <th:block th:each="product, status : ${cartAndProductDtoList}">
+                <div class="row border rounded p-1">
+                    <div class="col-sm-1">
+                        <div class="div-count">[[${status.count}]]</div>
+                    </div>
+                    <div class="col-sm-3"><img th:src="@{'/product-images/'+${product.productDto.image}}" class="img-fluid" /></div>
+                    <div class="col-sm-8">
+                        <div class="text-wrap" style="font-weight: bold; font-size: large">
+                            <a th:href="@{'/p/' + ${product.productDto.id}}">[[${product.productDto.name}]]</a>
+                        </div>
+
+                        <div>
+                            <label class="col-sm-2 col-form-label">Số lượng</label>
+                            <span class="col-sm-10">
+                                <span th:text="${product.quantity}" style="font-weight: bold"></span>
+                            </span>
+                        </div>
+                        <div>
+                            <label class="col-sm-2 col-form-label">Thành tiền</label>
+                            <span class="col-sm-10" style="font-weight: bold">
+                                <span th:replace="fragments::format_currency(${product.subTotal})"></span>
+<!--                                <span th:text="${product.subTotal}" style="font-weight: bold"></span>-->
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+</div>

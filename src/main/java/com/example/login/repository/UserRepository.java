@@ -39,4 +39,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     int countByRole(Role role);
 
     boolean existsByEmail(String keyword);
+
+    @Query("select u from User u WHERE u.verificationCodeCheckout = (?1)")
+    User findByVerificationCodeCheckout(String code);
 }

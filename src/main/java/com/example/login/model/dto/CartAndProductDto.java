@@ -2,17 +2,22 @@ package com.example.login.model.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 import java.util.Date;
 
 @Getter
 @Setter
-public class CartAndProductDto {
+@NoArgsConstructor
+public class CartAndProductDto implements Serializable {
+    private static final long serialVersionUID = -3822831474371253454L;
+
     private int id;
     private ProductDto product;
     private CartDto cart;

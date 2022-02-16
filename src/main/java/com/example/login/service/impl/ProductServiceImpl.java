@@ -34,6 +34,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class ProductServiceImpl implements ProductService {
 
+    public static final int PRODUCT_SEARCH = 2;
+
     @Autowired
     private ProductRepository repo;
 
@@ -54,15 +56,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product getProduct(String id) throws ProductNotFoundException {
-        Optional<Product> productOptional = repo.findById(Integer.parseInt(id));
+    public Product getProduct(int id) throws ProductNotFoundException {
+        Optional<Product> productOptional = repo.findById(id);
         return productOptional
                 .orElseThrow(() -> new ProductNotFoundException("không thể tìm thấy sản phẩm"));
     }
 
     @Override
-    public Page<Product> searchProduct(String keyword) {
-        Pageable pageable = PageRequest.of(0,10);
+    public Page<Product> searchProduct(String keyword, int currentPage) {
+        Pageable pageable = PageRequest.of(currentPage - 1,PRODUCT_SEARCH);
         return repo.findAllProduct(keyword, pageable);
     }
 
@@ -219,5 +221,22 @@ public class ProductServiceImpl implements ProductService {
         List<Product> listProductSameMoney = repo.listProductSameMoney(money);
         listProductSameMoney.removeAll(Arrays.asList(product));
         return listProductSameMoney;
+    }
+
+    @Override
+    public Boolean checkProductIsDelete(int productId) {
+        return repo.checkProductIsDelete(productId);
+    }
+
+    @Override
+    public ProductDto convertToProductDto(Product product) {
+        ProductDto productDto =  convertToDto(product);
+        productDto.setId(product.getId());
+        productDto.setQuantity(product.getQuantity());
+        productDto.setInStock(product.isInStock());
+        productDto.setPrice(product.getPrice());
+        productDto.setCost(product.getCost());
+
+        return productDto;
     }
 }

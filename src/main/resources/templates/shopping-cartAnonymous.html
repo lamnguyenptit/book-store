@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>FakeBookShop</title>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="shortcut icon" href="#">
+    <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid">
+    <div th:replace="navigation :: header_menu"></div>
+
+    <div class="text-center">
+        <h2>Giỏ hàng của bạn</h2>
+    </div>
+
+    <div th:if="${checkNullCart} eq true">
+        <h3>Giỏ hàng đang bị trống</h3>
+
+    </div>
+
+    <div th:if="${checkNullCart} eq false">
+
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12 col-md-10 col-md-offset-1">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th></th>
+                            <th class="text-center">Giá</th>
+                            <th class="text-center">Tổng tiền</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="element : ${cartsSession}">
+                            <td class="col-md-1" style="text-align: center">
+                                <span th:text="${element.key.id}" style="font-weight: bold; float:left"></span>
+                            </td>
+                            <td class="col-md-6">
+                                <div class="media">
+                                    <a class="thumbnail pull-left" href="#">
+                                        <img class="media-object"
+                                             th:src="@{'/product-images/'+ ${element.key.image}}"
+                                             style="width: 72px; height: 72px;">
+                                    </a>
+                                    <div class="media-body">
+                                        <h4 class="media-heading"><a href="#" th:text="${element.key.name}"
+                                                                     th:href="@{'/p/' + ${element.key.id}}"></a></h4>
+                                        <span  th:if="${element.key.inStock eq true}">
+                                            <span>Trạng thái:<span
+                                                    class="text-success"><strong>Có sẵn</strong></span></span> <br>
+                                            <span>Số lượng còn lại:<span
+                                                    class="text-danger"><strong th:text="${element.key.quantity}"></strong></span></span>
+                                        </span>
+                                        <span th:if="${element.key.inStock eq false}">Trạng thái:<span
+                                                class="text-success"><strong>Hết hàng</strong></span></span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="col-md-1" style="text-align: center">
+                                <input type="input" class="form-control quantityInputAnonymous" th:id="'quantity' + ${element.key.id}"
+                                       th:pid = "${element.key.id}" th:maxQuan="${element.key.quantity}"
+                                       th:value="${element.value}" th:checkIns = "${element.key.inStock}">
+                            </td>
+                            <td>
+                            <span class="input-group-btn">
+                                  <a class="btn btn-danger btn-number linkMinusAnonymous" data-type="minus"
+                                     th:pid="${element.key.id}">
+                                    <span class="glyphicon glyphicon-minus"></span>
+                                  </a>
+                            </span>
+                                <span class="input-group-btn">
+                                  <a class="btn btn-success btn-number linkPlusAnonymous" data-type="plus"
+                                     th:pid="${element.key.id}"
+                                     th:maxQuan="${element.key.quantity}" >
+                                      <span class="glyphicon glyphicon-plus"></span>
+                                  </a>
+                            </span>
+                            </td>
+                            <td class="col-md-1 text-center"><strong>
+                                <span th:replace="fragments::format_currency(${element.key.productPrice})">
+                                </span>
+                            </strong></td>
+                            <td class="col-md-1 text-center" width="10%"><strong class="subtotal"
+                                                                     th:id="'orderSubTotal' + ${element.key.id}">
+                                <span th:replace="fragments::format_currency(${element.key.subTotal})"></span>
+                            </strong></td>
+                            <td class="col-md-1">
+                                <button type="button" class="btn btn-danger removeProductAnonymous"
+                                        th:pid="${element.key.id}">
+                                    <span class="glyphicon glyphicon-remove"></span> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>  </td>
+                            <td>  </td>
+                            <td>  </td>
+                            <td><h3>Tổng tiền</h3></td>
+                            <td class="text-right"><h3><strong th:id="orderTotalMoney">
+                                <span th:replace="fragments::format_currency(${totalMoney})"></span>
+                            </strong></h3></td>
+                        </tr>
+                        <tr>
+                            <td>  </td>
+                            <td>  </td>
+                            <td>  </td>
+                            <td>
+                                <button type="button" class="btn btn-default btnContinueShop">
+                                    <span class="glyphicon glyphicon-shopping-cart"></span> Tiếp tục mua hàng
+                                </button>
+                            </td>
+                            <td>
+                                    <button type="submit" class="btn btn-success btnCheckoutAnonymous">
+                                        Đặt hàng <span class="glyphicon glyphicon-play"></span>
+                                    </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+<!--            <div th:replace="fragments :: pagination('/cart', 'sản phẩm')"></div>-->
+        </div>
+    </div>
+
+</div>
+
+<th:block>
+    <script type="text/javascript">
+        contextPath = "[[@{/}]]";
+        $(".btnCheckoutAnonymous").on("click",function(evt){
+            evt.preventDefault();
+            var test = prepareCheckOutAnonymous();
+            if(test == "OK"){
+                window.location.href = "[[@{/fillInformation}]]"
+
+                // checkOut();
+            }
+            else{
+                window.location.href = "[[@{/cartAnonymous}]]";
+            }
+        });
+
+        // function fillInformation(){
+        //     window.location.href = "[[@{/fillInformation}]]"
+        // }
+
+
+        function prepareCheckOutAnonymous(){
+            var check = 0;
+            $(".quantityInputAnonymous").each(function(index, item){
+                productId = $(item).attr("pid");
+                pieceAvailable = $(item).attr("maxQuan");
+                myQuantity = ($(item).val());
+                checkIns = $(item).attr("checkIns");
+                $.ajax({
+                    type: 'GET',
+                    url:"[[@{/prepareCheckoutAnonymous}]]",
+                    async: false,
+                    data: {
+                        productId : productId,
+                        productQuantity: myQuantity,
+                        checkIns : checkIns
+                    },
+                    success: function(response){
+                        if(response != ""){
+                            alert(response);
+                            check = 1;
+                        }
+                    }
+                })
+            });
+
+            if(check == 0)
+                return "OK";
+            else
+                return "FAIL";
+        }
+
+        function checkOut(){
+            $.ajax({
+                type: 'GET',
+                url: "[[@{/checkoutAnonymous}]]"
+            }).done(function(response){
+                // showModalWarning("Success", response);
+                window.location.href = "[[@{/checkoutAnonymousSuccess}]]";
+            }).fail(function(){
+                showModalWarning("Error", "Lỗi xảy ra trong quá trình thanh toán");
+            })
+        }
+
+    </script>
+    <script type="text/javascript" th:src="@{/js/cart-item.js}"></script>
+
+</th:block>
+</body>
+</html>

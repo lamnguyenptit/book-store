@@ -22,4 +22,12 @@ public interface CartRepository extends JpaRepository<Cart, Integer> {
     @Query("SELECT c FROM Cart c WHERE c.statusPayment = 'YES'" +
             " AND c.user.id = (?1)")
     List<Cart> listCartPurchase(int userId);
+
+    @Query("SELECT c FROM Cart c WHERE c.statusPayment = 'DELAY' AND c.user.id = (?1)")
+    Cart findCartDelayByUser(int userId);
+
+    @Modifying
+    @Query("UPDATE Cart c SET c.statusPayment = 'YES' WHERE c.statusPayment = 'DELAY'" +
+            " AND c.user.id = (?1)")
+    void updateSuccessCheckoutCart(int userId);
 }

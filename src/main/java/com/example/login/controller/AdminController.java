@@ -40,7 +40,7 @@ public class AdminController {
         return "/admin/admin-home-page";
     }
 
-    @GetMapping("/loginAdmin")
+    @RequestMapping("/admin/login")
     public String viewAdminLoginPage() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken)
@@ -176,4 +176,5 @@ public class AdminController {
     public void lockUser(@RequestParam("id") int id){
         userService.lockUserById(id);
     }
+
 }

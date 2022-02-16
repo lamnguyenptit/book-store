@@ -36,12 +36,30 @@ function showModalWarning(title, body){
 
 $(document).ready(function(){
     $("#buttonAdd2Cart").on("click", function(evt){
+
+    })
+})
+
+$(document).ready(function(){
+    $("#buttonAdd2Cart").on("click", function(evt){
         quantity = $("#quantity" + productId).val();
         if( parseInt(quantity) == 0){
             evt.preventDefault();
             showModalWarning("Cảnh báo", "Số lượng phải lớn hơn 0!");
         }else{
             addToCart(quantity);
+        }
+    })
+})
+
+$(document).ready(function(){
+    $("#buttonAdd2CartAnonymous").on("click", function(evt){
+        quantity = $("#quantity" + productId).val();
+        if( parseInt(quantity) == 0){
+            evt.preventDefault();
+            showModalWarning("Cảnh báo", "Số lượng phải lớn hơn 0!");
+        }else{
+            addToCartAnonymous(quantity);
         }
     })
 })
@@ -56,6 +74,23 @@ function addToCart(quantity){
             // _csrf: csrfValue
         },
         success: function (response){
+            showModalWarning("Giỏ hàng", response);
+        }
+
+    })
+}
+
+
+function addToCartAnonymous(quantity){
+    url =  contextPath + "cartAnonymous/add/" + productId + "/" +quantity;
+    $.ajax({
+        method: "POST",
+        url: url,
+        data: {
+            productId : productId,
+        },
+        success: function (response){
+            // window.location.href = "/view";
             showModalWarning("Giỏ hàng", response);
         }
 

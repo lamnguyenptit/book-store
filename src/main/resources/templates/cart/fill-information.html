@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>FakeBookShop</title>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="shortcut icon" href="#">
+    <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    <div th:replace = "navigation :: header_menu"></div>
+    <h1 style="text-align: center">Thông tin khách hàng</h1>
+    <div class="border border-secondary rounded p-3" style="max-width: 900px; margin: 0 auto;">
+        <form class="information" method="post" th:object="${anonymousForm}" th:action="@{/fillInformation}">
+            <div class="mb-3">
+                <span>Tên khách hàng: </span>
+                <input type="text" th:field="*{name}" class="form-control" placeholder="tên">
+                <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <span>Số điện thoại: </span>
+                <input type="tel" size="15" th:field="*{phone}" class="form-control" placeholder="số điện thoại">
+                <span th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <span>Địa chỉ: </span>
+                <input type="text" th:field="*{address}" class="form-control" placeholder="địa chỉ">
+                <span th:if="${#fields.hasErrors('address')}" th:errors="*{address}" class="text-danger"></span>
+            </div>
+
+<!--            <div class="mb-3">-->
+<!--                <fieldset>-->
+<!--                    <label>Gửi email?</label>-->
+<!--                    <input class="anonymous_check" type="checkbox" value="1" onchange="valueChanged()"/>-->
+<!--                </fieldset>-->
+
+<!--                <fieldset class="anonymous_email">-->
+<!--                    <input type="email" th:field="*{email}" class="form-control" id="anonymousEmail" readonly="readonly">-->
+<!--                    <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger"></span>-->
+
+<!--                </fieldset>-->
+<!--            </div>-->
+            <div><input type="submit" value="Đặt hàng" class="btn btn-primary"/></div>
+            <br>
+            <a class="btn btn-primary" th:href="@{/cartAnonymous}">Quay về giỏ hàng</a>
+        </form>
+    </div>
+</div>
+
+
+
+<th:block>
+    <script type="text/javascript">
+        function valueChanged()
+        {
+            if($('.anonymous_check').is(":checked")){
+                $(".anonymous_email").show();
+                document.getElementById('anonymousEmail').readOnly = false;
+                document.getElementById("anonymousEmail").setAttribute("placeholder","Nhập địa chỉ email của bạn");
+            }
+            else{
+                $(".anonymous_email").hide();
+                document.getElementById("anonymousEmail").removeAttribute("placeholder");
+                document.getElementById('anonymousEmail').readOnly = true;}
+            }
+    </script>
+</th:block>
+
+
+</body>
+</html>

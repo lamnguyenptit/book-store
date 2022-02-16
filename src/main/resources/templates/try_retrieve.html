@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>FakeBookShop</title>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="shortcut icon" href="#">
+    <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid">
+    <div th:replace="navigation :: header_menu"></div>
+
+    <div class="text-center">
+        <h2>Các đơn hàng của bạn</h2>
+    </div>
+
+    <div th:if="${checkNullPurchaseOrder} eq true">
+        <h3>Bạn chưa có đơn hàng nào</h3>
+
+    </div>
+
+    <div th:if="${checkNullPurchaseOrder} eq false">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12 col-md-10 col-md-offset-1">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th th:replace="fragments :: column_link('id', 'ID')"></th>
+                            <th th:replace="fragments :: column_link('checkoutDate', 'Ngày đặt hàng')"></th>
+                            <th>Sản phẩm</th>
+                            <th th:replace="fragments :: column_link('totalMoney', 'Tổng tiền')"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${listCartPurchase}">
+                            <td class="col-md-1" style="text-align: left; font-weight: bold">
+                                <span th:text="'PO'+${item.id}"></span>
+                            </td>
+                            <td class="col-md-1" style="text-align: left">
+                                <span th:text="${item.checkoutDate}"></span>
+                            </td>
+                            <td class="col-md-1" style="text-align: left">
+                                <span th:utext="${item.getProductNames()}"></span>
+                            </td>
+                            <td class="col-md-1" style="text-align: left">
+                                <span th:text="${item.totalMoney}"></span>
+                            </td>
+                            <td width="1%">
+                                <a title="Xem chi tiết về đơn hàng này" class="linkDetail"
+                                   th:href="@{'/purchase/order/' + ${item.id}}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-menu-up" viewBox="0 0 16 16">
+                                    <path d="M7.646 15.854a.5.5 0 0 0 .708 0L10.207 14H14a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3.793l1.853 1.854zM1 9V6h14v3H1zm14 1v2a1 1 0 0 1-1 1h-3.793a1 1 0 0 0-.707.293l-1.5 1.5-1.5-1.5A1 1 0 0 0 5.793 13H2a1 1 0 0 1-1-1v-2h14zm0-5H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v2zM2 11.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 0-1h-8a.5.5 0 0 0-.5.5zm0-4a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 0-1h-11a.5.5 0 0 0-.5.5zm0-4a.5.5 0 0 0 .5.5h6a.5.5 0 0 0 0-1h-6a.5.5 0 0 0-.5.5z"/>
+                                </svg></a>
+                            </td>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div th:replace="fragments :: pagination('/purchase', 'đơn hàng')"></div>
+<div>check6</div>
+
+            <div class="modal fade" id="orderDetailsModal">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        kfjskfjsf
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<div class="modal fade text-center" id="confirmModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Xác nhận xóa</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <span id="confirmText"></span>
+            </div>
+            <div class="modal-footer">
+                <a href="" class="btn btn-success" id="yesButton">Yes</a>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block>
+    <script type="text/javascript" th:src="@{/js/cart-item.js}"></script>
+    <script type="text/javascript">
+        contextPath = "[[@{/}]]";
+
+        $(function (){
+            $(".btnContinueShop").click(function(){
+                window.location.href = "[[@{/view}]]";
+            })
+        })
+
+        $(document).ready(function(){
+            handleDetailLink();
+        });
+
+        function handleDetailLink() {
+            $(".linkDetail").on("click", function(e) {
+                e.preventDefault();
+                // $('#orderDetailsModal').modal('show').find('.modal-content').load($(this).attr('href'));
+                alert($(this).attr('href'));
+            });
+        }
+    </script>
+
+</th:block>
+</body>
+</html>

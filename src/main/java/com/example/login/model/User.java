@@ -42,6 +42,9 @@ public class User implements UserDetails {
     private boolean locked;
     private boolean enabled;
 
+    @Column(name = "verification_code_checkout", length = 64)
+    private String verificationCodeCheckout;
+
     @OneToOne(mappedBy = "user")
     private ConfirmationToken confirmationToken;
 

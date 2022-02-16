@@ -26,6 +26,14 @@
                 <input type="email" th:field="*{email}" class="form-control" readonly>
                 <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger"></span>
             </div>
+            <th:block th:if="${user.getProvider().name() == 'LOCAL'}">
+                <div class="mb-3">
+                    <span>Mật khẩu:</span>
+                    <input type="password" th:field="*{password}" class="form-control"
+                           placeholder="để trống nếu bạn không muốn thay đổi mật khẩu">
+                    <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger"></span>
+                </div>
+            </th:block>
             <div class="mb-3">
                 <input type="text" th:field="*{name}" class="form-control" placeholder="Name">
                 <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></span>
@@ -134,6 +142,14 @@
                 elements[i].name = name.replace(le, String(num))
             }
         }
+    }
+
+    function checkMatchPassword(confirmPassword){
+        // if($("#password").val() != confirmPassword.value())
+        //     confirmPassword.setCustomValidity("Mật khẩu không khớp!");
+        // else
+        //     confirmPassword.setCustomValidity("");
+        confirmPassword.setCustomValidity("tlalla");
     }
 </script>
 </body>
