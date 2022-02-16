@@ -18,7 +18,10 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             + "AND (p.id = ?1)")
     Page<Product> listProductByCategory(Integer categoryId, Pageable pageable);
 
+
     Optional<Product> findById(Integer id);
+
+
 
 
     @Query("SELECT p FROM Product p WHERE CONCAT(lower(p.description), ' ', lower(p.name), ' ') LIKE lower(concat('%',?1,'%'))")
@@ -34,4 +37,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     @Query("SELECT p FROM Product p WHERE (p.price * ((100 - p.discountPercent)/100)) BETWEEN (?1)*0.9 AND (?1)*1.1 ")
     List<Product> listProductSameMoney(Double money);
+
+    @Query("select count(p)>0 from Product p where p.id = (?1)")
+    public boolean checkProductIsDelete(int productId);
 }

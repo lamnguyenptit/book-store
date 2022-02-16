@@ -1,11 +1,9 @@
 package com.example.login.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -17,7 +15,9 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product extends IdBaseEntity{
+//@EqualsAndHashCode
+public class Product extends IdBaseEntity  implements Serializable{
+    private static final long serialVersionUID = -3822831474371253454L;
 
     @Column(length = 100)
     private String name;
@@ -93,4 +93,29 @@ public class Product extends IdBaseEntity{
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     private Set<Category> categories = new HashSet<>();
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((this.getId() == null) ? 0 : this.getId().hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Product other = (Product) obj;
+        if (this.getId() == null) {
+            if (other.getId() != null)
+                return false;
+        } else if (!this.getId().equals(other.getId()))
+            return false;
+        return true;
+    }
 }

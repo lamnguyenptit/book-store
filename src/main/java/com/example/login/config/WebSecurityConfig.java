@@ -1,16 +1,17 @@
 package com.example.login.config;
 
+import com.example.login.config.security.FakeBookUserDetailService;
 import com.example.login.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
@@ -18,58 +19,65 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 public class WebSecurityConfig{
     private static UserService userService;
 
-    @Autowired
-    public WebSecurityConfig(@Lazy UserService userService) {
-        WebSecurityConfig.userService = userService;
-    }
+//    @Autowired
+//    public WebSecurityConfig(@Lazy UserService userService) {
+//        WebSecurityConfig.userService = userService;
+//    }
 
     @Bean
     public static BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public static DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
-    }
+//    @Bean
+//    public static DaoAuthenticationProvider authenticationProvider() {
+//        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+//        authProvider.setUserDetailsService(userService);
+//        authProvider.setPasswordEncoder(passwordEncoder());
+//        return authProvider;
+//    }
 
     @Configuration
     @Order(1)
     public static class AdminConfigurationAdapter extends WebSecurityConfigurerAdapter {
-        public AdminConfigurationAdapter() {
-            super();
+
+        @Bean
+        public UserDetailsService adminDetailsService(){
+            return new AdminDetailService();
+        }
+
+        public DaoAuthenticationProvider authenticationProvider(){
+            DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+            authenticationProvider.setUserDetailsService(adminDetailsService());
+            authenticationProvider.setPasswordEncoder(passwordEncoder());
+
+            return authenticationProvider;
         }
 
         @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
+        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
             auth.authenticationProvider(authenticationProvider());
         }
 
         @Override
         protected void configure(HttpSecurity http) {
             try {
-                http.antMatcher("/admin*")
+                http.antMatcher("/admin/**")
                         .authorizeRequests()
-                        .antMatchers("/admin/**")
-                        .hasAuthority("ADMIN")
-                        .anyRequest()
-                        .authenticated()
+                        .anyRequest().hasAuthority("ADMIN")
+                        .and().httpBasic()
 
                         .and()
                         .formLogin()
-                        .loginPage("/loginAdmin")
-                        .loginProcessingUrl("/admin_login")
-                        .failureUrl("/loginAdmin?error")
+                        .loginPage("/admin/login")
+                        .failureUrl("/admin/login?error")
                         .defaultSuccessUrl("/admin/home", true)
                         .permitAll()
 
                         .and()
                         .logout()
-                        .logoutUrl("/admin_logout")
-                        .logoutSuccessUrl("/loginAdmin?logout")
+                        .logoutUrl("/admin/logout")
+                        .logoutSuccessUrl("/admin/login?logout")
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID")
@@ -87,53 +95,66 @@ public class WebSecurityConfig{
     }
 
     @Configuration
+    @Order(2)
     public static class UserConfigurationAdapter extends WebSecurityConfigurerAdapter {
-        public UserConfigurationAdapter() {
-            super();
+        @Bean
+        public UserDetailsService userDetailsService(){
+         return new FakeBookUserDetailService();
         }
 
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(authenticationProvider());
-        }
+        public DaoAuthenticationProvider authenticationProvider(){
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService());
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
+
+        return authenticationProvider;
+    }
 
         @Override
-        protected void configure(HttpSecurity http) {
-            try {
-                http
-                        .authorizeRequests()
-                        .antMatchers("/loginAdmin","/login-google/**","/register/**", "/forgot-password/**", "/reset-password/**", "/oauth/**", "/view/**")
-                        .permitAll()
-                        .antMatchers("/user/**")
-                        .hasAuthority("USER")
-                        .anyRequest()
-                        .authenticated()
+        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(authenticationProvider());}
 
-                        .and()
-                        .formLogin()
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http.authorizeRequests()
+                    .antMatchers("/change-profile", "/cart", "/purchase", "/checkout").authenticated()
+                    .antMatchers("/change-profile", "/cart", "/purchase", "/checkout")
+                    .hasAuthority("USER")
+
+                    .antMatchers("/admin/*").denyAll()
+
+                    .anyRequest()
+                    .permitAll()
+
+                    .and()
+                    .formLogin()
                         .loginPage("/loginUser")
                         .loginProcessingUrl("/user_login")
-                        .failureUrl("/loginUser?error")
                         .defaultSuccessUrl("/user/home", true)
                         .permitAll()
 
-                        .and()
-                        .logout()
-                        .logoutUrl("/user_logout")
-                        .logoutSuccessUrl("/loginUser?logout")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
+                    .and()
+                    .logout()
+                    .logoutUrl("/user_logout")
+                    .logoutSuccessUrl("/loginUser")
 
-                        .and()
-                        .exceptionHandling()
-                        .accessDeniedPage("/403")
+                    .and()
+                        .rememberMe().key("AbcDeFGHIjkLmnOp_123456789")
+                        .tokenValiditySeconds(3*24*60*60)
 
-                        .and()
-                        .csrf().disable();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+                    .and()
+                    .exceptionHandling()
+                    .accessDeniedPage("/403")
+
+                    .and()
+                    .csrf().disable();
+
         }
-    }
+
+        @Override
+        public void configure(WebSecurity web) throws Exception {
+            web.ignoring().antMatchers("/images/**", "/js/**", "/webjars/**");
+        }
+        }
 }

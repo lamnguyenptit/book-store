@@ -1,4 +1,4 @@
-package com.example.login.config.security;
+package com.example.login.config;
 
 import com.example.login.model.User;
 import org.springframework.security.core.GrantedAuthority;
@@ -8,11 +8,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
-public class FakeBookUserDetail implements UserDetails {
-
+public class AdminDetail implements UserDetails {
     private User user;
 
-    public FakeBookUserDetail(User user){
+    public AdminDetail(User user){
         this.user = user;
     }
 
@@ -48,10 +47,10 @@ public class FakeBookUserDetail implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.getRole().name().equals("USER") && user.isEnabled() && !user.isLocked();
+        return user.getRole().name().equals("ADMIN") && user.isEnabled() && !user.isLocked();
     }
 
-    public String getFullName() {
+    public String getFullname() {
         return this.user.getName();
     }
 }

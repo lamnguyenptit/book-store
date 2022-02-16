@@ -56,8 +56,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product getProduct(String id) throws ProductNotFoundException {
-        Optional<Product> productOptional = repo.findById(Integer.parseInt(id));
+    public Product getProduct(int id) throws ProductNotFoundException {
+        Optional<Product> productOptional = repo.findById(id);
         return productOptional
                 .orElseThrow(() -> new ProductNotFoundException("không thể tìm thấy sản phẩm"));
     }
@@ -217,5 +217,22 @@ public class ProductServiceImpl implements ProductService {
         List<Product> listProductSameMoney = repo.listProductSameMoney(money);
         listProductSameMoney.removeAll(Arrays.asList(product));
         return listProductSameMoney;
+    }
+
+    @Override
+    public Boolean checkProductIsDelete(int productId) {
+        return repo.checkProductIsDelete(productId);
+    }
+
+    @Override
+    public ProductDto convertToProductDto(Product product) {
+        ProductDto productDto =  convertToDto(product);
+        productDto.setId(product.getId());
+        productDto.setQuantity(product.getQuantity());
+        productDto.setInStock(product.isInStock());
+        productDto.setPrice(product.getPrice());
+        productDto.setCost(product.getCost());
+
+        return productDto;
     }
 }
