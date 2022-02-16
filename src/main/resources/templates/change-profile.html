@@ -86,7 +86,7 @@
 <script type="text/javascript">
     function chooseFile(fileInput) {
         if (fileInput.files && fileInput.files[0]) {
-            var fileReader = new FileReader()
+            let fileReader = new FileReader()
             fileReader.onload = function (e) {
                 document.getElementById("image").src = e.target.result
             }
@@ -95,7 +95,7 @@
     }
 
     function addSchoolViaAjax() {
-        var index = $("#index").val()
+        let index = $("#index").val()
         $.ajax({
             type: "GET",
             url: "add-school",
@@ -115,10 +115,10 @@
     }
 
     function deleteSchoolViaAjax(e){
-        var index = $("#index").val()
+        let index = $("#index").val()
         $("#index").val(--index)
-        var currentIndex = e.name
-        var elements = document.getElementsByClassName("school")
+        let currentIndex = e.name
+        let elements = document.getElementsByClassName("school")
         e.parentElement.remove()
         for (let i = 0; i < elements.length; ++i) {
             let name = elements[i].name

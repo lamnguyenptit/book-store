@@ -5,6 +5,7 @@ import com.example.login.error.ShoppingCartException;
 import com.example.login.model.Cart;
 import com.example.login.model.CartAndProduct;
 import com.example.login.model.Product;
+import com.example.login.model.dto.CartDto;
 
 import java.util.List;
 
@@ -27,4 +28,12 @@ public interface ShoppingCartService {
     List<CartAndProduct> listProductPurchase(int userId);
 
     int getQuantityProductInCart(int userId, int productId);
+
+    List<CartDto> findAll();
+
+    CartDto findById(int id);
+
+    void updateOrder(CartDto cartDto);
+
+    void deleteById(int id);
 }

@@ -14,8 +14,13 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode
 public class UserDto {
     private int id;
+
+    @Size(max = 20, message = "Name must less than 20 characters")
+    @NotBlank(message = "Username cannot empty")
+    private String username;
 
     @Email(message = "Email isn't valid!")
     private String email;

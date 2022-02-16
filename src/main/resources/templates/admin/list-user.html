@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>FakeBookShop</title>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="shortcut icon" href="#">
+</head>
+<body>
+<div th:replace="admin/fragment :: header_menu"></div>
+<div class="container">
+    <div>
+        <h1>FakeBookShop Admin Control</h1>
+    </div>
+    <div class="full-details">
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Image</th>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Enable</th>
+                    <th>Locked</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="user : ${listUser}">
+                    <th th:utext="${user.id}"></th>
+                    <td>
+                        <img width="50" height="50" th:unless="${user.image eq ''}" th:src="@{'/' + ${user.image}}" alt="">
+                        <img width="50" height="50" th:if="${user.image eq ''}" th:src="@{/site-logo/no-image.jpg}" alt="">
+                    </td>
+                    <td th:utext="${user.email}"></td>
+                    <td th:utext="${user.name}"></td>
+                    <td th:utext="${user.phone}"></td>
+                    <td th:utext="${user.address}"></td>
+                    <td>
+                        <div class="form-check form-switch">
+                            <input th:name="${user.id}" class="form-check-input" type="checkbox" role="switch" th:checked="${user.enabled}" onchange="enableUserViaAjax(this)">
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-check form-switch">
+                            <input th:name="${user.id}" class="form-check-input" type="checkbox" role="switch" th:checked="${user.locked}" onchange="lockUserViaAjax(this)">
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div th:replace="admin/fragment :: footer_menu"></div>
+</div>
+<script type="text/javascript">
+    function enableUserViaAjax(e) {
+        let id = e.name
+        $.ajax({
+            type: "GET",
+            url: "/admin/enable-user",
+            data: {
+                id: id
+            },
+            timeout: 100000,
+            error: function (e) {
+                console.log("ERROR: ", e)
+            }
+        })
+    }
+
+    function lockUserViaAjax(e) {
+        let id = e.name
+        $.ajax({
+            type: "GET",
+            url: "/admin/lock-user",
+            data: {
+                id: id
+            },
+            timeout: 100000,
+            error: function (e) {
+                console.log("ERROR: ", e)
+            }
+        })
+    }
+</script>
+
+</body>
+</html>

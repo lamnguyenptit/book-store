@@ -6,16 +6,21 @@ import com.example.login.repository.UserRepository;
 import com.example.login.service.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.server.Session;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -272,6 +277,12 @@ public class UserServiceImpl implements UserService {
         return userDto;
     }
 
+    private List<UserDto> convertToDtos(List<User> users){
+        if (users == null)
+            return null;
+        return users.stream().map(this::convertToUserDto).collect(Collectors.toList());
+    }
+
     private User convertToUser(UserDto userDto) {
         if (userDto == null)
             return null;
@@ -316,8 +327,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> listAll() {
-        return (List<User>) userRepository.findAll();
+    public List<UserDto> listAllAdmin() {
+        return convertToDtos(userRepository.findAllByRole(Role.ADMIN));
     }
 
     @Override
@@ -336,5 +347,103 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserByEmail(String userEmail) {
         return userRepository.findUserByEmail(userEmail);
+    }
+
+    @Override
+    public void deleteAdmin(int id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null)
+            return;
+        if (user.getImage() != null || !user.getImage().equals("")){
+            String filePath1 = Paths.get("").toAbsolutePath() + "/target/classes/static/images/";
+            String filePath2 = Paths.get("").toAbsolutePath() + "/src/main/resources/static/images/";
+            try {
+                Files.delete(Paths.get(filePath1 + user.getImage()));
+                Files.delete(Paths.get(filePath2 + user.getImage()));
+            } catch (IOException ignored) {
+            }
+            try {
+                Files.delete(Paths.get(filePath2 + user.getImage()));
+            } catch (IOException ignored) {
+            }
+        }
+        userRepository.delete(user);
+    }
+
+    @Override
+    public int countAdmin() {
+        return userRepository.countByRole(Role.ADMIN);
+    }
+
+    @Override
+    public void createAdmin(UserDto userDto) {
+        if (userRepository.existsByEmail(userDto.getEmail()))
+            return;
+        User user = new User();
+        user.setEmail(userDto.getUsername());
+        user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
+        user.setImage(userDto.getImage());
+        user.setEnabled(userDto.isEnabled());
+        user.setLocked(userDto.isLocked());
+        user.setName(userDto.getName());
+        user.setRole(Role.ADMIN);
+        user.setProvider(Provider.LOCAL);
+        user.setPhone(userDto.getPhone());
+        user.setAddress(userDto.getAddress());
+        userRepository.save(user);
+    }
+
+    @Override
+    public UserDto findAdminById(int id) {
+        UserDto userDto = convertToUserDto(userRepository.findById(id).orElse(null));
+        if (userDto != null)
+            userDto.setUsername(userDto.getEmail());
+        return userDto;
+    }
+
+    @Override
+    public void updateAdmin(UserDto userDto) {
+        User user = userRepository.findById(userDto.getId()).orElse(null);
+        if (user == null)
+            return;
+        if (userRepository.existsByEmail(userDto.getUsername()))
+            return;
+        user.setId(userDto.getId());
+        user.setEmail(userDto.getUsername());
+        user.setPassword(userDto.getPassword());
+        user.setName(userDto.getName());
+        user.setEnabled(userDto.isEnabled());
+        user.setLocked(userDto.isLocked());
+        user.setPhone(userDto.getPhone());
+        user.setAddress(userDto.getAddress());
+        userRepository.saveAndFlush(user);
+    }
+
+    @Override
+    public List<UserDto> listAllUser() {
+        return convertToDtos(userRepository.findAllByRole(Role.USER));
+    }
+
+    @Override
+    public void enableUserById(int id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null)
+            return;
+        user.setEnabled(!user.isEnabled());
+        userRepository.saveAndFlush(user);
+    }
+
+    @Override
+    public void lockUserById(int id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null)
+            return;
+        user.setLocked(!user.isLocked());
+        userRepository.saveAndFlush(user);
+    }
+
+    @Override
+    public void changeAdminPassword(UserDto userDto) {
+        userRepository.updatePassword(bCryptPasswordEncoder.encode(userDto.getPassword()), userDto.getId());
     }
 }

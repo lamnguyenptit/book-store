@@ -12,4 +12,12 @@ public interface CategoryService {
     List<CategoryDto> findAllCategory();
 
     CategoryDto findById(int id);
+
+    List<CategoryDto> findAllCategoryEnabled();
+
+    void createCategory(CategoryDto categoryDto);
+
+    void updateCategory(CategoryDto categoryDto);
+
+    void deleteCategoryById(int id);
 }

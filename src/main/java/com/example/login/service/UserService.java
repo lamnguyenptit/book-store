@@ -26,11 +26,29 @@ public interface UserService extends UserDetailsService {
 
     void updateUser(UserDto userDto);
 
-    List<User> listAll();
-
     User getUserById(Integer id);
+
+    List<UserDto> listAllAdmin();
 
     void delete(Integer id);
 
     User getUserByEmail(String userEmail);
+
+    void deleteAdmin(int id);
+
+    int countAdmin();
+
+    void createAdmin(UserDto userDto);
+
+    UserDto findAdminById(int id);
+
+    void updateAdmin(UserDto userDto);
+
+    List<UserDto> listAllUser();
+
+    void enableUserById(int id);
+
+    void lockUserById(int id);
+
+    void changeAdminPassword(UserDto userDto);
 }

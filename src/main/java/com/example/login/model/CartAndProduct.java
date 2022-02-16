@@ -8,17 +8,14 @@ import java.util.Date;
 
 @Entity
 @Table(name = "cart_product")
-@IdClass(CartProductId.class)
 @Getter
 @Setter
-public class CartAndProduct {
+public class CartAndProduct extends IdBaseEntity{
 
-    @Id
     @ManyToOne
     @JoinColumn(name = "product_id", referencedColumnName = "id")
     private Product product;
 
-    @Id
     @ManyToOne
     @JoinColumn(name = "cart_id", referencedColumnName = "id")
     private Cart cart;

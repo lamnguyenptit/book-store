@@ -92,7 +92,7 @@ public class UserController {
     public String viewResetPasswordPage(@RequestParam(value = "token") String token, Model model) {
         if (!userService.confirmRestPassword(token)){
             model.addAttribute("message", "Cannot change password");
-            return "login";
+            return "loginUser";
         }
         model.addAttribute("token", token);
         return "reset-password";
@@ -107,7 +107,7 @@ public class UserController {
         }
         if (userService.changePassword(token, password)){
             model.addAttribute("message", "Change password success !");
-            return "login";
+            return "loginUser";
         }
         model.addAttribute("message", "Cannot reset password !");
         return "reset-password";

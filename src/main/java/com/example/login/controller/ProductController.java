@@ -70,16 +70,9 @@ public class ProductController {
         return "admin/list-product";
     }
 
-    @GetMapping("/admin/add-product")
-    public String showAddProductPage(Model model){
-        model.addAttribute("product", new ProductDto());
-        model.addAttribute("listCategoryId", new HashSet<Integer>());
-        return "admin/add-product";
-    }
-
     @ModelAttribute("categories")
     public List<CategoryDto> getCategories(){
-        return categoryService.findAllCategory();
+        return categoryService.findAllCategoryEnabled();
     }
 
     @ModelAttribute("publishers")
@@ -87,11 +80,15 @@ public class ProductController {
         return publisherService.findAllPublisher();
     }
 
+    @GetMapping("/admin/add-product")
+    public String showAddProductPage(Model model){
+        model.addAttribute("product", new ProductDto());
+        return "admin/add-product";
+    }
+
     @PostMapping(path = "/admin/add-product", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public String processAddProduct(@Valid @ModelAttribute(name = "product")ProductDto productDto, BindingResult bindingResult,
-                                    @ModelAttribute(name = "listCategoryId")HashSet<Integer> listCategoryId, Model model,
-                                    @RequestPart("img") MultipartFile multipartFile) throws IOException {
-        System.out.println(listCategoryId.size());
+                                    Model model, @RequestPart("img") MultipartFile multipartFile) throws IOException {
         if (bindingResult.hasErrors()){
             return "admin/add-product";
         }
@@ -110,20 +107,13 @@ public class ProductController {
                 return "admin/add-product";
             }
         }
-//        productDto.setCreateTime(Timestamp.valueOf(LocalDateTime.now()));
-//        productService.createProduct(productDto);
+        productService.createProduct(productDto);
         return "redirect:/admin/add-product?success";
     }
 
     @GetMapping("/admin/update-product/{id}")
     public String updateProduct(@PathVariable(name = "id")int id, Model model){
-        ProductDto productDto = productService.findById(id);
-        model.addAttribute("product", productDto);
-        List<CategoryDto> categoryDtos = categoryService.findAllCategory();
-        model.addAttribute("category", categoryDtos);
-
-        List<PublisherDto> publisherDtos = publisherService.findAllPublisher();
-        model.addAttribute("publisher", publisherDtos);
+        model.addAttribute("product", productService.findById(id));
         return "admin/update-product";
     }
 
@@ -135,10 +125,6 @@ public class ProductController {
 //            List<ProductDto> productDtos = productService.findAllProduct();
 //            model.addAttribute("products", productDtos);
 //            model.addAttribute("product", productDto);
-            List<CategoryDto> categoryDtos = categoryService.findAllCategory();
-            model.addAttribute("category", categoryDtos);
-            List<PublisherDto> publisherDtos = publisherService.findAllPublisher();
-            model.addAttribute("publisher", publisherDtos);
             return "admin/update-product";
         }
         if (!multipartFile.isEmpty()) {
@@ -159,7 +145,7 @@ public class ProductController {
                 return "admin/update-product";
             }
         }
-        productService.updateProduct(productDto);
+//        productService.updateProduct(productDto);
         return "redirect:/admin/product";
     }
 

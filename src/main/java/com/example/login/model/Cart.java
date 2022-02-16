@@ -23,7 +23,11 @@ public class Cart extends IdBaseEntity{
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "cart")
+    private String name;
+    private String address;
+    private String phone;
+
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartAndProduct> cartAssoc;
 
     @Override

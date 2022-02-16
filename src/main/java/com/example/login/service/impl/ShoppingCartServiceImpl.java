@@ -6,10 +6,16 @@ import com.example.login.model.Cart;
 import com.example.login.model.CartAndProduct;
 import com.example.login.model.Product;
 import com.example.login.model.User;
+import com.example.login.model.dto.CartAndProductDto;
+import com.example.login.model.dto.CartDto;
+import com.example.login.model.dto.ProductDto;
+import com.example.login.model.dto.UserDto;
 import com.example.login.repository.CartProductRepository;
 import com.example.login.repository.CartRepository;
 import com.example.login.repository.ProductRepository;
+import com.example.login.service.CartAndProductService;
 import com.example.login.service.ShoppingCartService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +23,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -28,6 +35,9 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private CartProductRepository cartProductRepository;
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private CartAndProductService cartAndProductService;
 
     @Override
     public Cart getCartByUser(Integer userId) {
@@ -137,5 +147,74 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             return 0;
         else
             return productInCart.getQuantity();
+    }
+
+    @Override
+    public List<CartDto> findAll() {
+        return convertToDtos(cartRepository.findAll());
+    }
+
+    @Override
+    public CartDto findById(int id) {
+        return convertToDto(cartRepository.findById(id).orElse(null));
+    }
+
+    @Override
+    public void updateOrder(CartDto cartDto) {
+        Cart cart = cartRepository.findById(cartDto.getId()).orElse(null);
+        if (cart == null)
+            return;
+        cart.setName(cartDto.getName());
+        cart.setAddress(cartDto.getAddress());
+        cart.setPhone(cartDto.getPhone());
+        if (cartDto.getCartAndProducts().isEmpty() || cartDto.getCartAndProducts() == null)
+            cart.setCartAssoc(null);
+        else {
+            List<CartAndProduct> cartAndProducts = new ArrayList<>();
+            cartDto.getCartAndProducts().forEach(cartAndProductDto -> {
+                CartAndProduct cartAndProduct = cartAndProductService.findById(cartAndProductDto.getId());
+                if (cartAndProduct == null)
+                    return;
+                cartAndProduct.setQuantity(cartAndProductDto.getQuantity());
+                cartAndProducts.add(cartAndProduct);
+            });
+            cart.getCartAssoc().clear();
+            cartAndProducts.forEach(cart.getCartAssoc()::add);
+        }
+        cartRepository.saveAndFlush(cart);
+    }
+
+    @Override
+    public void deleteById(int id) {
+        cartRepository.deleteById(id);
+    }
+
+    private CartDto convertToDto(Cart cart){
+        if (cart == null)
+            return null;
+        CartDto cartDto = new CartDto();
+        BeanUtils.copyProperties(cart, cartDto);
+
+        UserDto userDto = new UserDto();
+        BeanUtils.copyProperties(cart.getUser(), userDto);
+        cartDto.setUser(userDto);
+
+        List<CartAndProductDto> cartAndProductDtos = new ArrayList<>();
+        cart.getCartAssoc().forEach(cartAndProduct -> {
+            CartAndProductDto cartAndProductDto = new CartAndProductDto();
+            BeanUtils.copyProperties(cartAndProduct, cartAndProductDto);
+            ProductDto productDto = new ProductDto();
+            BeanUtils.copyProperties(cartAndProduct.getProduct(), productDto);
+            cartAndProductDto.setProduct(productDto);
+            cartAndProductDtos.add(cartAndProductDto);
+        });
+        cartDto.setCartAndProducts(cartAndProductDtos);
+        return cartDto;
+    }
+
+    private List<CartDto> convertToDtos(List<Cart> carts) {
+        if (carts == null)
+            return null;
+        return carts.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 }

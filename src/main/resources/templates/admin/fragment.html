@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 
 </head>
@@ -10,31 +9,35 @@
         <a class="navbar-brand" th:href="@{/admin/home}">
             <img th:src="@{/site-logo/pictureSmall.png}" alt="">
         </a>
-        <button class="navbar-toggler" type="button" data-toggle = "collapse" data-target="#topNavbar">
+        <button class="navbar-toggler" type="button" data-toggle = "collapse" data-target="#topNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="topNavbar">
-            <ul class="navbar-nav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a href="/admin/admin" class="nav-link">Admins</a>
+                    <a href="/admin/list-admin" class="nav-link">Admin</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin/category" class="nav-link">Danh mục</a>
+                    <a href="/admin/list-category" class="nav-link">Danh mục</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin/publicsher" class="nav-link">Nhà xuất bản</a>
+                    <a href="/admin/list-publisher" class="nav-link">Nhà xuất bản</a>
                 </li>
                 <li class="nav-item">
                     <a href="/admin/product" class="nav-link">Sản phẩm</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin/customer" class="nav-link">Khách hàng</a>
+                    <a href="/admin/list-user" class="nav-link">Khách hàng</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin/order" class="nav-link">Đơn hàng</a>
+                    <a href="/admin/list-order" class="nav-link">Đơn hàng</a>
                 </li>
-                <li class="nav-item">
-                    <a href="/admin_logout" class="nav-link">Đăng xuất</a>
+            </ul>
+            <ul class="navbar-nav px-3">
+                <li class="nav-link text-white" th:text="'Hello ' + ${#httpServletRequest.userPrincipal.name}">Hello
+                </li>
+                <li class="nav-item text-nowrap">
+                    <span class="navbar-text"><a href="/admin_logout" class="nav-link">Đăng xuất</a></span>
                 </li>
             </ul>
         </div>
@@ -57,9 +60,18 @@
 </div>
 
 <div th:fragment="footer_menu">
-    <div>
-        <p>FakeBookShop Control Panel - Copyright &copy; FakeBook</p>
-    </div>
+    <footer class="py-4 bg-light mt-auto">
+        <div class="container-fluid px-4">
+            <div class="d-flex align-items-center justify-content-between small">
+                <div class="text-muted">Copyright © FakeBookShop Control Panel 2022</div>
+<!--                <div>-->
+<!--                    <a href="#">Privacy Policy</a>-->
+<!--                    ·-->
+<!--                    <a href="#">Terms &amp; Conditions</a>-->
+<!--                </div>-->
+            </div>
+        </div>
+    </footer>
     <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
     <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
 </div>

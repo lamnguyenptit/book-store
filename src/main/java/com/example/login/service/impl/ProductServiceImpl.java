@@ -85,28 +85,32 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void createProduct(ProductDto productDto) {
         Set<Category> categories = new HashSet<>();
-//        for (CategoryDto c: productDto.getCategory()){
-//            Category category = new Category();
-//            BeanUtils.copyProperties(c, category);
-//            categories.add(category);
-//        }
+        for (CategoryDto c: productDto.getCategory()){
+            Category category = new Category();
+            BeanUtils.copyProperties(c, category);
+            categories.add(category);
+        }
         Publisher publisher = new Publisher();
         BeanUtils.copyProperties(productDto.getPublisher(), publisher);
-        Product product = new Product(productDto.getName(), productDto.getCost(), productDto.getCreateTime(), productDto.getDiscountPercent(), productDto.isEnabled(), productDto.getDescription(), productDto.getImage(), productDto.isInStock(), productDto.getQuantity(), productDto.getPrice(), categories, publisher);
+        Product product = new Product(productDto.getName(), productDto.getCost(), Timestamp.valueOf(LocalDateTime.now()), productDto.getDiscountPercent(), productDto.isEnabled(), productDto.getDescription(), productDto.getImage(), productDto.isInStock(), productDto.getQuantity(), productDto.getPrice(), categories, publisher);
         repo.save(product);
     }
 
     @Override
     public void deleteProduct(int id) {
-        Product product = repo.getById(id);
+        Product product = repo.findById(id).orElse(null);
+        if (product == null)
+            return;
         if (product.getImage() != null || !product.getImage().equals("")){
             String filePath1 = Paths.get("").toAbsolutePath() + "/target/classes/static/product-images/";
             String filePath2 = Paths.get("").toAbsolutePath() + "/src/main/resources/static/product-images/";
             try {
-                Files.deleteIfExists(Paths.get(filePath1 + product.getImage()));
-                Files.deleteIfExists(Paths.get(filePath2 + product.getImage()));
-            } catch (IOException e) {
-                e.printStackTrace();
+                Files.delete(Paths.get(filePath2 + product.getImage()));
+            } catch (IOException ignored) {
+            }
+            try {
+                Files.delete(Paths.get(filePath1 + product.getImage()));
+            } catch (IOException ignored) {
             }
         }
         repo.delete(product);
@@ -147,11 +151,11 @@ public class ProductServiceImpl implements ProductService {
         product.setQuantity(productDto.getQuantity());
         product.setDescription(productDto.getDescription());
         Set<Category> categories = new HashSet<>();
-//        for (CategoryDto c:productDto.getCategory()){
-//            Category category = new Category();
-//            BeanUtils.copyProperties(c, category);
-//            categories.add(category);
-//        }
+        for (CategoryDto c:productDto.getCategory()){
+            Category category = new Category();
+            BeanUtils.copyProperties(c, category);
+            categories.add(category);
+        }
         product.setCategories(categories);
         Publisher publisher = new Publisher();
         BeanUtils.copyProperties(productDto.getPublisher(), publisher);
@@ -166,7 +170,7 @@ public class ProductServiceImpl implements ProductService {
         if (product == null)
             return null;
         ProductDto productDto = new ProductDto();
-        BeanUtils.copyProperties(product, productDto, "id", "createTime", "updateTime", "productAssoc");
+        BeanUtils.copyProperties(product, productDto, "createTime", "updateTime", "productAssoc");
 
         Set<CategoryDto> categoryDtos = new HashSet<>();
         for (Category c:product.getCategories()){
@@ -174,7 +178,7 @@ public class ProductServiceImpl implements ProductService {
             BeanUtils.copyProperties(c, categoryDto, "productSet");
             categoryDtos.add(categoryDto);
         }
-//        productDto.setCategory(categoryDtos);
+        productDto.setCategory(categoryDtos);
 
         PublisherDto publisherDto = new PublisherDto();
         BeanUtils.copyProperties(product.getPublisher(), publisherDto);
