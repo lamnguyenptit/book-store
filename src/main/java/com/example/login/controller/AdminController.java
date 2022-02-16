@@ -143,7 +143,6 @@ public class AdminController {
         UserDto userDto = userService.findAdminById(id);
         List<String> users = sessionRegistry.getAllPrincipals().stream().filter(o ->
             !sessionRegistry.getAllSessions(o, false).isEmpty()).map(Object::toString).collect(Collectors.toList());
-        List<Object> users1 = sessionRegistry.getAllPrincipals();
         users.forEach(o -> {
             List<SessionInformation> sessions = sessionRegistry.getAllSessions(o, false);
             sessions.forEach(session -> {

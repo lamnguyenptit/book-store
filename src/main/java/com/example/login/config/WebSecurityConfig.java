@@ -1,8 +1,6 @@
 package com.example.login.config;
 
 import com.example.login.config.security.FakeBookUserDetailService;
-import com.example.login.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +10,6 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.session.SessionRegistry;
@@ -33,7 +30,7 @@ import java.util.Arrays;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig{
-    private static UserService userService;
+//    private static UserService userService;
 
 //    @Autowired
 //    public WebSecurityConfig(@Lazy UserService userService) {
@@ -100,7 +97,7 @@ public class WebSecurityConfig{
         }
 
         @Override
-        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(authenticationProvider());
         }
 
@@ -165,7 +162,7 @@ public class WebSecurityConfig{
     }
 
         @Override
-        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        protected void configure(AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(authenticationProvider());}
 
 
@@ -212,9 +209,6 @@ public class WebSecurityConfig{
                         .sessionAuthenticationStrategy(compositeSessionAuthenticationStrategy())
                         .and()
                         .addFilter(concurrencyFilter());
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-        }
         }
 }

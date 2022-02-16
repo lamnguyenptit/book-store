@@ -20,7 +20,7 @@ public class CartAndProductDto implements Serializable {
 
     private int id;
     private ProductDto product;
-    private CartDto cart;
+    private CarDto cart;
 
     @NotNull(message = "Quantity cannot blank")
     @Digits(integer = 10, fraction = 0, message = "Quantity must be digits")

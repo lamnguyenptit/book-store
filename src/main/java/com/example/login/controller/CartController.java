@@ -1,7 +1,6 @@
 package com.example.login.controller;
 
-import com.example.login.model.dto.CartDto;
-import com.example.login.model.dto.CategoryDto;
+import com.example.login.model.dto.CarDto;
 import com.example.login.service.ShoppingCartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,7 +17,7 @@ public class CartController {
     private ShoppingCartService cartService;
 
     @ModelAttribute("carts")
-    public List<CartDto> getCarts(){
+    public List<CarDto> getCarts(){
         return cartService.findAll();
     }
 
@@ -34,10 +33,10 @@ public class CartController {
     }
 
     @PostMapping("/admin/update-order")
-    public String processUpdateOrder(@Valid @ModelAttribute("cart")CartDto cartDto, BindingResult bindingResult) {
+    public String processUpdateOrder(@Valid @ModelAttribute("cart") CarDto carDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors())
             return "admin/update-order";
-        cartService.updateOrder(cartDto);
+        cartService.updateOrder(carDto);
         return "redirect:/admin/list-order";
     }
 }
