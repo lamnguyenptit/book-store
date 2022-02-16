@@ -1,23 +1,36 @@
 package com.example.login.config;
 
 import com.example.login.config.security.FakeBookUserDetailService;
-import com.example.login.service.UserService;
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
+import org.springframework.security.web.session.ConcurrentSessionFilter;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.session.SimpleRedirectSessionInformationExpiredStrategy;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig{
-    private static UserService userService;
+//    private static UserService userService;
 
 //    @Autowired
 //    public WebSecurityConfig(@Lazy UserService userService) {
@@ -37,6 +50,35 @@ public class WebSecurityConfig{
 //        return authProvider;
 //    }
 
+//    @Bean
+//    public HttpSessionEventPublisher httpSessionEventPublisher() {
+//        return new HttpSessionEventPublisher();
+//    }
+    @Bean
+    public ServletListenerRegistrationBean<HttpSessionEventPublisher> httpSessionEventPublisher() {
+        return new ServletListenerRegistrationBean<>(new HttpSessionEventPublisher());
+    }
+
+    @Bean
+    public static SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    public static ConcurrentSessionFilter concurrencyFilter() {
+        return new ConcurrentSessionFilter(sessionRegistry(), new SimpleRedirectSessionInformationExpiredStrategy("/loginAdmin?expired"));
+    }
+
+    @Bean
+    public static CompositeSessionAuthenticationStrategy compositeSessionAuthenticationStrategy(){
+        ConcurrentSessionControlAuthenticationStrategy concurrentSessionControlAuthenticationStrategy = new ConcurrentSessionControlAuthenticationStrategy(sessionRegistry());
+        concurrentSessionControlAuthenticationStrategy.setMaximumSessions(1);
+        concurrentSessionControlAuthenticationStrategy.setExceptionIfMaximumExceeded(true);
+        SessionFixationProtectionStrategy sessionFixationProtectionStrategy = new SessionFixationProtectionStrategy();
+        RegisterSessionAuthenticationStrategy registerSessionStrategy = new RegisterSessionAuthenticationStrategy(sessionRegistry());
+        return new CompositeSessionAuthenticationStrategy(Arrays.asList(concurrentSessionControlAuthenticationStrategy, sessionFixationProtectionStrategy, registerSessionStrategy));
+    }
+
     @Configuration
     @Order(1)
     public static class AdminConfigurationAdapter extends WebSecurityConfigurerAdapter {
@@ -55,8 +97,13 @@ public class WebSecurityConfig{
         }
 
         @Override
-        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(authenticationProvider());
+        }
+
+        @Override
+        protected AuthenticationManager authenticationManager() throws Exception {
+            return super.authenticationManager();
         }
 
         @Override
@@ -87,7 +134,11 @@ public class WebSecurityConfig{
                         .accessDeniedPage("/403")
 
                         .and()
-                        .csrf().disable();
+                        .csrf().disable()
+                        .sessionManagement()
+                        .sessionAuthenticationStrategy(compositeSessionAuthenticationStrategy())
+                        .and()
+                        .addFilter(concurrencyFilter());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -111,9 +162,14 @@ public class WebSecurityConfig{
     }
 
         @Override
-        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        protected void configure(AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(authenticationProvider());}
 
+
+        @Override
+        protected AuthenticationManager authenticationManager() throws Exception {
+            return super.authenticationManager();
+        }
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
@@ -147,14 +203,12 @@ public class WebSecurityConfig{
                     .exceptionHandling()
                     .accessDeniedPage("/403")
 
-                    .and()
-                    .csrf().disable();
-
-        }
-
-        @Override
-        public void configure(WebSecurity web) throws Exception {
-            web.ignoring().antMatchers("/images/**", "/js/**", "/webjars/**");
-        }
+                        .and()
+                        .csrf().disable()
+                        .sessionManagement()
+                        .sessionAuthenticationStrategy(compositeSessionAuthenticationStrategy())
+                        .and()
+                        .addFilter(concurrencyFilter());
+            }
         }
 }

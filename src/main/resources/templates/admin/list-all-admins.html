@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>FakeBookShop</title>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="shortcut icon" href="#">
+</head>
+<body>
+<div th:replace="admin/fragment :: header_menu"></div>
+<div class="container">
+    <div>
+        <h1>FakeBookShop Admin Control</h1>
+    </div>
+    <div class="full-details">
+        <div class="alert" id="delete-admin"></div>
+        <div class="mb-3"><a class="btn btn-success" th:href="@{/admin/add-admin}">+ Add admin</a></div>
+        <table class="table table-striped">
+            <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Locked</th>
+                <th>Enable</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:id="${admin.id}" th:each="admin : ${listAdmin}">
+                <td>[[${admin.id}]]</td>
+                <td>[[${admin.name}]]</td>
+                <td>[[${admin.email}]]</td>
+                <td>[[${admin.phone}]]</td>
+                <td>[[${admin.address}]]</td>
+                <td>[[${admin.locked}]]</td>
+                <td>[[${admin.enabled}]]</td>
+                <td>
+                    <a type="button" class="btn btn-info" th:href="@{'/admin/update-admin/' + ${admin.id}}">Edit</a>
+                    <input type="button" th:name="${admin.id}" th:classappend="${#request.userPrincipal.name eq admin.email} ? 'disabled'" class="btn btn-danger" value="Delete" onclick="deleteAdminViaAjax(this)">
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div th:replace="admin/fragment :: footer_menu"></div>
+</div>
+
+<!--//// code modal-->
+<!--<div class="modal fade text-center" id="confirmModal">-->
+<!--    <div class="modal-dialog">-->
+<!--        <div class="modal-content">-->
+<!--            <div class="modal-header">-->
+<!--                <h4 class="modal-title">Xác nhận xóa</h4>-->
+<!--                <button type="button" class="close" data-dismiss="modal">&times;</button>-->
+<!--            </div>-->
+<!--            <div class="modal-body">-->
+<!--                <span id="confirmText"></span>-->
+<!--            </div>-->
+<!--            <div class="modal-footer">-->
+<!--                <a href="" class="btn btn-success" id="yesButton">Yes</a>-->
+<!--                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+<!--//// end code modal-->
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#delete-admin").hide()
+    })
+
+    function deleteAdminViaAjax(e){
+        if (confirm('Do you want to delete this admin ?')){
+            let id = e.name
+            $.ajax({
+                type: "GET",
+                dataType: 'html',
+                url: "/admin/delete-admin",
+                data: {
+                    id: id
+                },
+                timeout: 100000,
+                success: function (response) {
+                    if (response.normalize() === "Delete success !"){
+                        $("#"+id).remove()
+                        $("#delete-admin").addClass("alert-success")
+                    }
+                    else {
+                        $("#delete-admin").addClass("alert-danger")
+                    }
+                    $("#delete-admin").show().text(response)
+                },
+                error: function (e) {
+                    console.log("ERROR: ", e)
+                }
+            })
+        }
+        else
+            return false
+    }
+
+    // $(document).ready(function () {
+    //     $(".link-delete").on("click", function (e) {
+    //         e.preventDefault();
+    //         let link = $(this);
+    //         //alert($(this).attr("href"));
+    //         let userId = link.attr("userId");
+    //         $("#yesButton").attr("href", link.attr("href"));
+    //         $("#confirmText").text("Bạn có muốn xóa người dùng có ID " + userId + "?");
+    //         $("#confirmModal").modal();
+    //     })
+    // })
+</script>
+
+</body>
+</html>

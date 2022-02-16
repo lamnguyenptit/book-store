@@ -17,7 +17,8 @@
         <input type="hidden" th:field="*{id}" class="form-control">
         <div class="mb-3">
             <label>Image:</label>
-            <img id="image" width="100" height="100" alt="..." th:src="@{'/product-images/' + *{image}}">
+            <img id="img" width="100" height="100" alt="" th:unless="${product.image eq ''}" th:src="@{'/product-images/' + *{image}}">
+            <img id="img" width="100" height="100" alt="" th:if="${product.image eq ''}" th:src="@{'/site-logo/no-image.jpg'}">
             <input type="hidden" th:field="*{image}">
             <input type="file" name="img" accept="image/png, image/jpeg" multiple="multiple" onchange="chooseFile(this)">
             <div th:if="${messageFile}"><span th:text="${messageFile}" class="text-danger"></span></div>
@@ -40,34 +41,34 @@
         </div>
         <div class="mb-3">
             <label>Cost</label>
-            <input type="number" min="0" th:field="*{cost}" class="form-control">
+            <input type="number" name="cost" th:value="${#numbers.formatDecimal(product.cost, 1, 0)}" class="form-control">
             <span th:if="${#fields.hasErrors('cost')}" th:errors="*{cost}" class="text-danger"></span>
         </div>
         <div class="mb-3">
             <label>Price</label>
-            <input type="number" min="0" th:field="*{price}" class="form-control">
+            <input type="number" name="price" th:value="${#numbers.formatDecimal(product.price, 1, 0)}" class="form-control">
             <span th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="text-danger"></span>
         </div>
         <div class="mb-3">
             <label>Discount percent</label>
-            <input type="number" min="0" size="15" th:field="*{discountPercent}" class="form-control">
+            <input type="number" name="discountPercent" th:value="${#numbers.formatDecimal(product.discountPercent, 1, 0)}" class="form-control">
             <span th:if="${#fields.hasErrors('discountPercent')}" th:errors="*{discountPercent}" class="text-danger"></span>
         </div>
         <div class="mb-3">
             <label>Category</label>
-            <select class="form-select" th:field="*{category.id}">
-                <option th:each="category:${category}" th:value="${category.id}" th:utext="${category.name}"></option>
+            <select class="form-control" multiple="multiple" size="3" name="category" required>
+                <option th:each="c:${categories}" th:value="${{c}}" th:utext="${c.name}" th:selected="${product.category.contains(c)}"></option>
             </select>
         </div>
         <div class="mb-3">
             <label>Publisher</label>
             <select class="form-select" th:field="*{publisher.id}">
-                <option th:each="publisher:${publisher}" th:value="${publisher.id}" th:utext="${publisher.name}"></option>
+                <option th:each="p:${publishers}" th:value="${p.id}" th:utext="${p.name}"></option>
             </select>
         </div>
         <div class="mb-3">
             <label>Quantity</label>
-            <input type="number" min="0" th:field="*{quantity}" class="form-control">
+            <input type="number" th:field="*{quantity}" class="form-control">
             <span th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}" class="text-danger"></span>
         </div>
         <div class="mb-3">
@@ -82,13 +83,52 @@
     <div th:replace="admin/fragment :: footer_menu"></div>
 </div>
 <script type="text/javascript">
+    const _validFilejpeg = [".png", ".jpg"];
     function chooseFile(fileInput) {
+        validateForSize(fileInput, 0, 5120)
         if (fileInput.files && fileInput.files[0]) {
-            var fileReader = new FileReader()
+            let fileReader = new FileReader();
             fileReader.onload = function (e) {
-                document.getElementById("image").src = e.target.result
+                document.getElementById("img").src = e.target.result
             }
             fileReader.readAsDataURL(fileInput.files[0])
+        }
+    }
+
+    function validateForSize(oInput, minSize, maxSizejpeg) {
+        //if there is a need of specifying any other type, just add that particular type in var _validFilejpeg
+        if (oInput.type === "file") {
+            let sFileName = oInput.value
+            if (sFileName.length > 0) {
+                let blnValid = false
+                for (let j = 0; j < _validFilejpeg.length; j++) {
+                    let sCurExtension = _validFilejpeg[j]
+                    if (sFileName.substr(sFileName.length - sCurExtension.length, sCurExtension.length).toLowerCase() === sCurExtension.toLowerCase()) {
+                        blnValid = true
+                        break
+                    }
+                }
+                if (!blnValid) {
+                    alert("Sorry, this file is invalid, allowed extension is " + _validFilejpeg.join(", "))
+                    oInput.value = ""
+                    return false
+                }
+            }
+        }
+        fileSizeValidatejpeg(oInput, minSize, maxSizejpeg);
+    }
+
+    function fileSizeValidatejpeg(fdata, minSize, maxSizejpeg) {
+        if (fdata.files && fdata.files[0]) {
+            let fsize = fdata.files[0].size /1024 //The files property of an input element returns a FileList. fdata is an input element,fdata.files[0] returns a File object at the index 0.
+            //alert(fsize)
+            if (fsize > maxSizejpeg || fsize < minSize) {
+                // alert('This file size is: ' + fsize.toFixed(2) +
+                //     "KB. Files should be in " + (minSize) + " to " + (maxSizejpeg) + " KB ");
+                alert('Please select file < 5MB')
+                fdata.value = ""
+                return false
+            }
         }
     }
 </script>

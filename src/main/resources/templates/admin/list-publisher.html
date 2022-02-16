@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>FakeBookShop</title>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="shortcut icon" href="#">
+</head>
+<body>
+<div th:replace="admin/fragment :: header_menu"></div>
+<div class="container">
+    <div>
+        <h1>FakeBookShop Admin Control</h1>
+    </div>
+    <div class="mb-3"><a class="btn btn-success" th:href="@{/admin/add-publisher}">+ Add publisher</a></div>
+    <div class="full-details">
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Logo</th>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:id="${publisher.id}" th:each="publisher : ${publishers}">
+                <th th:utext="${publisher.id}"></th>
+                <td>
+                    <img width="50" height="50" th:unless="${publisher.logo eq ''}" th:src="@{'/publisher-images/' + ${publisher.logo}}" alt="">
+                    <img width="50" height="50" th:if="${publisher.logo eq ''}" th:src="@{/site-logo/no-image.jpg}" alt="">
+                </td>
+                <td th:utext="${publisher.name}"></td>
+                <td>
+                    <a type="button" class="btn btn-info" th:href="@{'/admin/update-publisher/' + ${publisher.id}}">Edit</a>
+                    <input type="button" th:name="${publisher.id}" class="btn btn-danger" value="Delete" onclick="deletePublisherViaAjax(this)">
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div th:replace="admin/fragment :: footer_menu"></div>
+</div>
+<script type="text/javascript">
+    function deletePublisherViaAjax(e){
+        if (confirm('Do you want to delete this publisher ?')){
+            let id = e.name
+            $.ajax({
+                type: "GET",
+                url: "/admin/delete-publisher",
+                data: {
+                    id: id
+                },
+                timeout: 100000,
+                success: function () {
+                    $("#"+id).remove()
+                },
+                error: function (e) {
+                    console.log("ERROR: ", e)
+                }
+            })
+        }
+        else
+            return false
+    }
+</script>
+
+</body>
+</html>
