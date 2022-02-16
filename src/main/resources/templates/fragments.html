@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html xmlns = "http://www.w3.org/1999/xhtml"
-      xmlns:th ="http://www.thymeleaf.org">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
 <head th:fragment="page_header(title)">
 
 </head>
@@ -40,12 +41,20 @@
             + '&keyword=' + ${keyword}}">[[${Label}]]
 </a>
 
+<div th:fragment="format_time(dateTime)" th:remove="tag">
+    <span th:text="${#dates.format(dateTime, 'yyyy-MM-dd HH:mm:ss')}"></span>
+</div>
+
+<span th:fragment="format_currency(money)">
+    <span th:text="${#numbers.formatDecimal(money, 3, 'WHITESPACE',-1, 'WHITESPACE' ) + 'đ'}"></span>
+</span>
+
 
 <div th:fragment = "pagination(moduleURL, entityName)" th:remove = "tag">
-    <div class="text-center m-1" th:if="${totalItems > 0}">
-		<span>Hiển thị [[${entityName}]] # [[${startCount}]] đến [[${endCount}]] của
-			[[${totalItems}]]</span>
-    </div>
+<!--    <div class="text-center m-1" th:if="${totalItems > 0}">-->
+<!--		<span>Hiển thị [[${entityName}]] # [[${startCount}]] đến [[${endCount}]] của-->
+<!--			[[${totalItems}]]</span>-->
+<!--    </div>-->
 
     <div class="text-center m-1" th:unless="${totalItems > 0}">
         <span>không [[${entityName}]] được tìm thấy</span>

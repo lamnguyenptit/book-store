@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div>
+  <form method="post" th:action="@{/addNote}" th:object="${}">
+    <textarea name="note"></textarea>
+    <input type="submit" value="add Note">
+  </form>
+</div>
+
+<div>
+  <form th:action="@{/delete/note}" method="post">
+    <input type="submit" value="delete note">
+  </form>
+</div>
+
+<div>
+  <ul>
+    <div th:each="note : ${notes}">
+      <li>note</li>
+    </div>
+  </ul>
+</div>
+
+</body>
+</html>

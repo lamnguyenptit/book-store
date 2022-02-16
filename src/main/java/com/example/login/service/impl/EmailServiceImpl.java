@@ -37,7 +37,12 @@ public class EmailServiceImpl implements EmailService {
 
             String body = templateEngine.process("email/confirm-register", context);
 
+/*//// JavaMailSenderImpl mailSender = Utility.prepareMailSender(emailSettings); là những code đã lấy sẵn
+    để chuẩn bị mailSender cho MimeMessage ở dưới*/
+
             MimeMessage message = emailSender.createMimeMessage();
+            /*//// private JavaMailSender emailSender;: lấy sẵn các property application */
+            /*//// MimeMessage message = mailSender.createMimeMessage();: ở code cũ */
             MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
             helper.setTo(user.getEmail());
             helper.setSubject("Email address verification");

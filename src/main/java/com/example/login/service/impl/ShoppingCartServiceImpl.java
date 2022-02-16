@@ -2,20 +2,24 @@ package com.example.login.service.impl;
 
 import com.example.login.error.ProductNotFoundException;
 import com.example.login.error.ShoppingCartException;
-import com.example.login.model.Cart;
-import com.example.login.model.CartAndProduct;
-import com.example.login.model.Product;
-import com.example.login.model.User;
+import com.example.login.model.*;
+import com.example.login.model.dto.CartAndProductDto;
+import com.example.login.model.dto.CartDTO;
+import com.example.login.model.dto.ProductDto;
+import com.example.login.model.dto.UserCartDto;
 import com.example.login.repository.CartProductRepository;
 import com.example.login.repository.CartRepository;
 import com.example.login.repository.ProductRepository;
+import com.example.login.repository.UserRepository;
 import com.example.login.service.ShoppingCartService;
+import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -28,6 +32,9 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private CartProductRepository cartProductRepository;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private UserRepository userRepository;
+
 
     @Override
     public Cart getCartByUser(Integer userId) {
@@ -117,23 +124,35 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     }
 
+//    @Override
+//    public Float updateSubTotal(int userId, int productId, int quantity) {
+//        Cart cart = cartRepository.findCartNotCheckoutByUser(userId);
+//        CartAndProduct cartProduct = cartProductRepository.findProductByCart(cart.getId(), productId);
+//        cartProduct.setQuantity(quantity);
+//        cartProductRepository.save(cartProduct);
+//        return cartProduct.getProduct().getDiscountPrice() * quantity;
+//    }
+
     @Override
-    public Float updateSubTotal(int userId, int productId, int quantity) {
+    public void updateSubTotal(int userId, int productId, int quantity) {
         Cart cart = cartRepository.findCartNotCheckoutByUser(userId);
         CartAndProduct cartProduct = cartProductRepository.findProductByCart(cart.getId(), productId);
         cartProduct.setQuantity(quantity);
         cartProductRepository.save(cartProduct);
-        return cartProduct.getProduct().getDiscountPrice() * quantity;
     }
 
     @Override
-    public void checkOutCart(int userId) throws ProductNotFoundException {
+    public int checkOutCart(int userId) throws ProductNotFoundException {
+//        User user = userRepository.getById(userId);
+//        String randomCode = RandomString.make(64);
+//        user.setVerificationCodeCheckout(randomCode);
+
         Cart cart = cartRepository.findCartNotCheckoutByUser(userId);
         List<CartAndProduct> listProductByUser = listProductByUserCart(cart.getId());
         for (CartAndProduct cp : listProductByUser){
             cp.setCheckoutDate(new Date());
             Product product = productRepository.findById(cp.getProduct().getId())
-                    .orElseThrow(() -> new ProductNotFoundException("xx"));
+                    .orElseThrow(() -> new ProductNotFoundException("Sản phẩm không tồn tại hoặc đã bị xóa"));
             cp.setSubTotal(product.getDiscountPrice() * cp.getQuantity());
             Integer newQuantity = product.getQuantity() - cp.getQuantity();
             product.setQuantity(newQuantity);
@@ -141,6 +160,73 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             productRepository.save(product);
         }
         cartRepository.checkOutCart(userId);
+        return cart.getId();
+    }
+
+    @Override
+    public Page<CartDTO> listCartCheckout(int userId, int pageNum, String sortField, String sortDir) {
+
+        Sort sort = Sort.by(sortField);
+        sort = sortDir.equals("asc") ? sort.ascending() : sort.descending();
+        Pageable pageable = PageRequest.of(pageNum - 1, PRODUCT_PER_PAGE, sort);
+
+        List<Cart> listCartPurchase = cartRepository.listCartPurchase(userId);
+        List<CartDTO> cartDTOList = listCartPurchase.stream().map(this::convertToCartDto).collect(Collectors.toList());
+        Comparator<CartDTO> compareByField = new Comparator<CartDTO>() {
+            @Override
+            public int compare(CartDTO o1, CartDTO o2) {
+                switch (sortField){
+                    case "id": return o1.getId().compareTo(o2.getId());
+                    case "checkoutDate": return o1.getCheckoutDate().compareTo(o2.getCheckoutDate());
+                    case "totalMoney": return o1.getTotalMoney().compareTo(o2.getTotalMoney());
+                }
+                return 0;
+            }
+        };
+
+        if(sortDir.equals("asc"))
+            Collections.sort(cartDTOList, compareByField);
+        else
+            Collections.sort(cartDTOList, compareByField.reversed());
+
+        final int start = (int) pageable.getOffset();
+        final int end = Math.min((start + pageable.getPageSize()), cartDTOList.size());
+
+        Page<CartDTO> listPage = new PageImpl<>(cartDTOList.subList(start,end), pageable, cartDTOList.size());
+
+        return listPage;
+    }
+
+    public CartDTO convertToCartDto(Cart cart){
+        CartDTO cartDTO = new CartDTO();
+        cartDTO.setId(cart.getId());
+        cartDTO.setCartAndProductDtoList(convertToCartAndProductDtoList(cart.getCartAssoc()));
+        return cartDTO;
+    }
+
+    public List<CartAndProductDto> convertToCartAndProductDtoList(List<CartAndProduct> cartAndProductList){
+        if(cartAndProductList == null)
+            return null;
+        return cartAndProductList.stream().map(this::convertToCartAndProductDto).collect(Collectors.toList());
+    }
+
+    public CartAndProductDto convertToCartAndProductDto(CartAndProduct item){
+        CartAndProductDto dto = new CartAndProductDto();
+        dto.setProductDto(convertToProductDto(item.getProduct()));
+        dto.setCheckoutDate(item.getCheckoutDate());
+        dto.setSubTotal(item.getSubTotal());
+        dto.setQuantity(item.getQuantity());
+        return dto;
+    }
+
+    public ProductDto convertToProductDto(Product product){
+        if(product == null)
+            return null;
+        ProductDto productDto = new ProductDto();
+        productDto.setId(product.getId());
+        productDto.setName(product.getName());
+        productDto.setImage(product.getImage());
+        return productDto;
     }
 
     @Override
@@ -182,6 +268,8 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         return listPage;
     }
 
+
+
     @Override
     public int getQuantityProductInCart(int userId, int productId) {
         Cart cart = cartRepository.findCartNotCheckoutByUser(userId);
@@ -198,5 +286,89 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             return 0;
         else
             return productInCart.getQuantity();
+    }
+
+    @Override
+    public UserCartDto fakeUserCart(User user, int cartId) {
+        UserCartDto userCartDto = new UserCartDto();
+        userCartDto.setName(user.getName());
+        userCartDto.setAddress(user.getAddress());
+        userCartDto.setPhone(user.getPhone());
+
+        Cart cart = cartRepository.getById(cartId);
+        userCartDto.setCartId(cartId);
+        CartDTO cartDTO = convertToCartDto(cart);
+        userCartDto.setTotalMoney(cartDTO.getTotalMoney());
+        userCartDto.setCheckoutDate(cartDTO.getCheckoutDate());
+        userCartDto.setPhone(user.getPhone());
+        userCartDto.setAddress(user.getAddress());
+        return userCartDto;
+    }
+
+    @Override
+    public List<CartAndProductDto> getCartAndProductsDetail(int cartId) {
+        List<CartAndProduct> cartAndProductList = cartProductRepository.listProductByUserCart(cartId);
+
+        return convertToCartAndProductDtoList(cartAndProductList);
+    }
+
+//    @Override
+//    public CheckoutType verifyCheckOut(String code) {
+//        User user = userRepository.findByVerificationCodeCheckout(code);
+//        if(user == null || !user.isEnabled() || user.isLocked())
+//            return CheckoutType.USER_NOT_FOUND;
+//        Cart cart = cartRepository.findCartDelayByUser(user.getId());
+//        if(cart == null)
+//            return CheckoutType.CART_NOT_FOUND;
+//        for (CartAndProduct cap :
+//                cart.getCartAssoc()) {
+//            Product product = productRepository.getById(cap.getProductId());
+//            if(product == null || !product.isInStock() || !product.isEnabled())
+//                return CheckoutType.PRODUCT_NOT_FOUND;
+//            if(cap.getQuantity() > product.getQuantity())
+//                return CheckoutType.EXCEED_QUANTITY;
+//        }
+//        return CheckoutType.SUCCESS;
+//    }
+//
+//    @Override
+//    public void verifyCheckOutSuccess(String code) {
+//        User user = userRepository.findByVerificationCodeCheckout(code);
+//        user.setVerificationCodeCheckout("");
+//        userRepository.save(user);
+//        cartRepository.updateSuccessCheckoutCart(user.getId());
+//    }
+
+    @Override
+    public Cart getCartDelayByUser(int userId) {
+        return cartRepository.findCartDelayByUser(userId);
+    }
+
+    @Override
+    public CartDTO getCartDtoById(int cartId) {
+        return convertToCartDto( cartRepository.getById(cartId));
+    }
+
+    @Override
+    public void checkoutCartAnonymous(Map<ProductDto, Integer> cartsSession) throws ProductNotFoundException {
+        Cart cart = new Cart();
+        cart.setStatusPayment("ANONYMOUS");
+
+        for(Map.Entry<ProductDto, Integer> item : cartsSession.entrySet()){
+            Product product = productRepository.findById(item.getKey().getId()).
+                    orElseThrow(() -> new ProductNotFoundException("Sản phẩm không tồn tại hoặc đã bị xóa"));
+            CartAndProduct cap = new CartAndProduct();
+            cap.setCart(cart);
+            cap.setProduct(product);
+            cap.setQuantity(item.getValue());
+            cap.setCheckoutDate(new Date());
+
+            Integer newQuantity = product.getQuantity() - cap.getQuantity();
+            product.setQuantity(newQuantity);
+            cartProductRepository.save(cap);
+            productRepository.save(product);
+        }
+        cartRepository.save(cart);
+
     }
 }

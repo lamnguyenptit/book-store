@@ -2,6 +2,7 @@ package com.example.login.service.impl;
 
 import com.example.login.model.*;
 import com.example.login.model.dto.*;
+import com.example.login.repository.CartRepository;
 import com.example.login.repository.UserRepository;
 import com.example.login.service.*;
 import org.springframework.beans.BeanUtils;
@@ -34,6 +35,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private SchoolService schoolService;
+
+    @Autowired
+    private ShoppingCartService shoppingCartService;
+
+    @Autowired
+    private CartRepository cartRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -217,6 +224,7 @@ public class UserServiceImpl implements UserService {
         }
         else
             schoolService.deleteAllByUser(user.getId());
+
 //        User test = new User();
 //        test.setEmail("lam");
 //        test.setName("Lam");
@@ -226,6 +234,8 @@ public class UserServiceImpl implements UserService {
 //        test.setProvider(Provider.LOCAL);
 //        test.setEnabled(true);
 //        userRepository.save(test);
+
+        user.setPassword(param.getPassword());
         userRepository.saveAndFlush(user);
     }
 
@@ -312,6 +322,19 @@ public class UserServiceImpl implements UserService {
             }
             user.setDegrees(degrees);
         }
+
+        User userInDB = userRepository.findById(userDto.getId()).get();
+
+        if(userInDB.getProvider().equals(Provider.LOCAL)){
+            if(!userDto.getPassword().isEmpty()){
+                String password = bCryptPasswordEncoder.encode(userDto.getPassword());
+                user.setPassword(password);
+            }else{
+                user.setPassword(userInDB.getPassword());
+            }
+        }else{
+            user.setPassword(userInDB.getPassword());
+        }
         return user;
     }
 
@@ -337,4 +360,5 @@ public class UserServiceImpl implements UserService {
     public User getUserByEmail(String userEmail) {
         return userRepository.findUserByEmail(userEmail);
     }
+
 }

@@ -34,27 +34,14 @@
                     <a href="/admin/order" class="nav-link">Đơn hàng</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin_logout" class="nav-link">Đăng xuất</a>
+                    <a href="/admin/logout" class="nav-link">Đăng xuất</a>
                 </li>
             </ul>
         </div>
     </nav>
 </div>
 
-<div th:fragment="search_nav" class="row">
-    <div class="col-md">
-        <nav class="navbar navbar-expand-sm bg-light">
-            <div class="collapse navbar-collapse" id="searchNavbar">
-                <form class="form-inline" th:action="@{/search}" method="get">
-                    <input type="search" name="keyword" class="form-control mr-sm-2"
-                           th:value="${keyword}"
-                           placeholder="keyword" required/>
-                    <input type="submit" class="btn btn-outline-success" value="Search"/>
-                </form>
-            </div>
-        </nav>
-    </div>
-</div>
+
 
 <div th:fragment="footer_menu">
     <div>

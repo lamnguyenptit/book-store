@@ -1,5 +1,6 @@
 package com.example.login.service;
 
+import com.example.login.model.CheckoutType;
 import com.example.login.model.GooglePojo;
 import com.example.login.model.User;
 import com.example.login.model.dto.UserDto;
