@@ -17,6 +17,7 @@ public class CartDTO implements Serializable {
     private Integer id;
 
     private List<CartAndProductDto> cartAndProductDtoList;
+    private Float totalMoney;
 
     public Date getCheckoutDate(){
         return cartAndProductDtoList.get(0).getCheckoutDate();
@@ -38,6 +39,14 @@ public class CartDTO implements Serializable {
             productNames += "<li>" + cp.getProductDto().getName() + "</li>";
         }
         productNames += "</ul>";
+        return productNames;
+    }
+
+    public String getProductNamesToExport(){
+        String productNames = "";
+        for(CartAndProductDto cp : cartAndProductDtoList){
+            productNames += cp.getProductDto().getName();
+        }
         return productNames;
     }
 }

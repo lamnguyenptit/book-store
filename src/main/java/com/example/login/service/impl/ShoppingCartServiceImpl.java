@@ -371,4 +371,12 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         cartRepository.save(cart);
 
     }
+
+    @Override
+    public List<CartDTO> listCartDtoToExport(int userId) {
+        List<Cart> listCartPurchase = cartRepository.listCartPurchase(userId);
+        List<CartDTO> cartDTOList = listCartPurchase.stream().map(this::convertToCartDto).collect(Collectors.toList());
+
+        return cartDTOList;
+    }
 }
