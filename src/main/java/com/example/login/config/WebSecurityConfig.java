@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -88,6 +89,7 @@ public class WebSecurityConfig{
             return new AdminDetailService();
         }
 
+        @Bean
         public DaoAuthenticationProvider authenticationProvider(){
             DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
             authenticationProvider.setUserDetailsService(adminDetailsService());
@@ -101,6 +103,7 @@ public class WebSecurityConfig{
             auth.authenticationProvider(authenticationProvider());
         }
 
+        @Bean(BeanIds.AUTHENTICATION_MANAGER)
         @Override
         protected AuthenticationManager authenticationManager() throws Exception {
             return super.authenticationManager();

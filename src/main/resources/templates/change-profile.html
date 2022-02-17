@@ -14,6 +14,7 @@
     <div class="border border-secondary rounded p-3" style="max-width: 900px; margin: 0 auto;">
         <form class="information" method="post" th:object="${user}" th:action="@{/change-profile}" enctype="multipart/form-data">
             <input type="hidden" th:field="*{id}" name="id">
+            <input type="hidden" th:field="*{username}">
             <div class="mb-3">
                 <img id="image" width="100" height="100" alt="Image" th:src="@{*{image}}">
                 <input type="hidden" th:field="*{image}">
