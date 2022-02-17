@@ -58,4 +58,6 @@ public interface ShoppingCartService {
     CarDto getCartDtoById(int cartId);
 
     void checkoutCartAnonymous(Map<ProductDto, Integer> cartsSession) throws ProductNotFoundException;
+
+    List<CarDto> listCartDtoToExport(int userId);
 }
