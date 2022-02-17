@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -63,8 +64,7 @@ public class EmailServiceImpl implements EmailService {
         try {
             Context context = new Context();
             context.setVariable("title", "Reset your password");
-            context.setVariable("content", "Please click on the link to reset your password. The link will " +
-                    "expire in 15'.");
+            context.setVariable("content", "Please click on the link to reset your password. The link will expire in 15'.");
             context.setVariable("link","http://localhost:8080/reset-password/confirm?token=" + token);
 
             String body = templateEngine.process("email/confirm-register", context);
@@ -87,5 +87,25 @@ public class EmailServiceImpl implements EmailService {
     public boolean isValid(String email) {
         String regex = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
         return email.matches(regex);
+    }
+
+    @Override
+    @Async
+    public void sendEmailUpdateOrder(User user) {
+        try {
+            Context context = new Context();
+            context.setVariable("title", "Your order has been updated");
+            context.setVariable("content", "We've change your order. Please check your order again!");
+            String body = templateEngine.process("email/confirm-register", context);
+
+            MimeMessage message = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
+            helper.setTo(user.getEmail());
+            helper.setSubject("Your order has been updated");
+            helper.setText(body, true);
+            emailSender.send(message);
+        } catch (MessagingException e) {
+            LOGGER.error("Failed to send email", e);
+        }
     }
 }
