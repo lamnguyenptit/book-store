@@ -3,6 +3,7 @@ package com.example.login.controller;
 import com.example.login.error.ProductNotFoundException;
 import com.example.login.error.ShoppingCartException;
 import com.example.login.error.UserNotFoundException;
+import com.example.login.export.CartCsvExporter;
 import com.example.login.model.*;
 import com.example.login.model.dto.CartAndProductDto;
 import com.example.login.model.dto.CarDto;
@@ -26,7 +27,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
@@ -466,6 +469,16 @@ public class ShoppingCartController {
                                           BindingResult bindingResult, HttpServletRequest request) throws MessagingException, UnsupportedEncodingException {
         if(bindingResult.hasErrors())
             return "cart/fill-information";
+
+        try{
+            Integer.parseInt(anonymousForm.getPhone());
+        }catch (NumberFormatException e){
+            return "cart/fill-information";
+        }
+
+        if(Integer.parseInt(anonymousForm.getPhone()) <0 )
+            return "cart/fill-information";
+
         Map<ProductDto, Integer> cartSessions = (Map<ProductDto, Integer>) request.getSession().getAttribute("CARTS_SESSION");
         if(cartSessions == null || cartSessions.size() == 0)
             return "redirect:/cartAnonymous";
@@ -599,6 +612,7 @@ public class ShoppingCartController {
 
         String content = first_content + second_content + third_content;
 
+
         content = content.replace("[[company]]", "FakeBook");
         content = content.replace("[[number]]", String.valueOf(cartId));
         content = content.replace("[[date]]", String.valueOf((cart.getCheckoutDate())));
@@ -693,6 +707,21 @@ public class ShoppingCartController {
 
        }catch(UserNotFoundException une){
            return "Bạn cần phải đăng nhập";
+       }
+    }
+
+    @GetMapping("/cart/export/csv")
+    public void exportCartToCsv(HttpServletResponse response, HttpServletRequest request){
+       try{
+           User user = getAuthenticatedUser(request);
+           List<CarDto> cartDTOList = shoppingCartService.listCartDtoToExport(user.getId());
+
+           CartCsvExporter cartCsvExporter = new CartCsvExporter();
+           cartCsvExporter.export(cartDTOList, response);
+       }catch (UserNotFoundException ex){
+           ex.getMessage();
+       } catch (IOException e) {
+           e.printStackTrace();
        }
     }
 

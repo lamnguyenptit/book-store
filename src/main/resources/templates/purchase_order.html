@@ -17,14 +17,18 @@
         <h2>Các đơn hàng của bạn</h2>
     </div>
 
-    <div th:if="${checkNullPurchaseOrder} eq true">
+    <div th:unless="${checkNullPurchaseOrder} == true">
         <h3>Bạn chưa có đơn hàng nào</h3>
 
     </div>
 
-    <div th:if="${checkNullPurchaseOrder} eq false">
+    <div th:if="${checkNullPurchaseOrder} == false">
 
         <div class="container">
+            <a type="button" class="btn btn-default" th:href="@{/cart/export/csv}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-circle-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5z"/>
+            </svg>Xuất CSV
+            </a>
             <div class="row">
                 <div class="col-sm-12 col-md-10 col-md-offset-1">
                     <table class="table table-hover">
@@ -66,7 +70,6 @@
             </div>
 
             <div th:replace="fragments :: pagination('/purchase', 'đơn hàng')"></div>
-<div>checkk17</div>
 
             <div class="modal fade" id="orderDetailsModal">
                 <div class="modal-dialog modal-xl">
