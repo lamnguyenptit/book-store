@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>List product</title>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="shortcut icon" href="#">
+</head>
+<body>
+<div th:replace="admin/fragment :: header_menu"></div>
+<h1 style="text-align: center">Update category</h1>
+<div class="container">
+    <form class="information" method="post" th:object="${category}" th:action="@{/admin/update-category}" enctype="multipart/form-data">
+        <input type="hidden" th:field="*{id}" class="form-control">
+        <div class="mb-3">
+            <label>Image:</label>
+            <img id="img" width="100" height="100" alt="" th:unless="${category.image eq ''}" th:src="@{'/category-images/' + *{image}}">
+            <img id="img" width="100" height="100" alt="" th:if="${category.image eq ''}" th:src="@{'/site-logo/no-image.jpg'}">
+            <input type="hidden" th:field="*{image}">
+            <input type="file" name="img" accept="image/png, image/jpeg" multiple="multiple" onchange="chooseFile(this)">
+            <div th:if="${messageFile}"><span th:text="${messageFile}" class="text-danger"></span></div>
+        </div>
+        <div class="mb-3">
+            <label>Name</label>
+            <input type="text" th:field="*{name}" class="form-control">
+            <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <div>Status:</div>
+            <div class="form-check form-switch">
+                <label for="enabled">enable</label>
+                <input class="form-check-input" type="checkbox" th:field="*{enabled}" role="switch" id="enabled" checked>
+            </div>
+        </div>
+        <div><input class="btn btn-primary" type="submit" value="Save"></div>
+        <br>
+        <a class="btn btn-primary" th:href="@{/admin/list-category}">Back</a>
+    </form>
+    <div th:replace="admin/fragment :: footer_menu"></div>
+</div>
+<script type="text/javascript">
+    const _validFilejpeg = [".png", ".jpg"];
+    function chooseFile(fileInput) {
+        validateForSize(fileInput, 0, 5120)
+        if (fileInput.files && fileInput.files[0]) {
+            let fileReader = new FileReader();
+            fileReader.onload = function (e) {
+                document.getElementById("img").src = e.target.result
+            }
+            fileReader.readAsDataURL(fileInput.files[0])
+        }
+    }
+
+    function validateForSize(oInput, minSize, maxSizejpeg) {
+        //if there is a need of specifying any other type, just add that particular type in var _validFilejpeg
+        if (oInput.type === "file") {
+            let sFileName = oInput.value
+            if (sFileName.length > 0) {
+                let blnValid = false
+                for (let j = 0; j < _validFilejpeg.length; j++) {
+                    let sCurExtension = _validFilejpeg[j]
+                    if (sFileName.substr(sFileName.length - sCurExtension.length, sCurExtension.length).toLowerCase() === sCurExtension.toLowerCase()) {
+                        blnValid = true
+                        break
+                    }
+                }
+                if (!blnValid) {
+                    alert("Sorry, this file is invalid, allowed extension is " + _validFilejpeg.join(", "))
+                    oInput.value = ""
+                    return false
+                }
+            }
+        }
+        fileSizeValidatejpeg(oInput, minSize, maxSizejpeg);
+    }
+
+    function fileSizeValidatejpeg(fdata, minSize, maxSizejpeg) {
+        if (fdata.files && fdata.files[0]) {
+            let fsize = fdata.files[0].size /1024 //The files property of an input element returns a FileList. fdata is an input element,fdata.files[0] returns a File object at the index 0.
+            //alert(fsize)
+            if (fsize > maxSizejpeg || fsize < minSize) {
+                // alert('This file size is: ' + fsize.toFixed(2) +
+                //     "KB. Files should be in " + (minSize) + " to " + (maxSizejpeg) + " KB ");
+                alert('Please select file < 5MB')
+                fdata.value = ""
+                return false
+            }
+        }
+    }
+</script>
+</body>
+</html>

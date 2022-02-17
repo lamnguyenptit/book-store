@@ -1,15 +1,14 @@
 package com.example.login.model.dto;
 
-import com.example.login.model.Product;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.List;
-
 @Getter
 @Setter
 @ToString
+@EqualsAndHashCode
 public class CategoryDto {
     private int id;
     private String name;

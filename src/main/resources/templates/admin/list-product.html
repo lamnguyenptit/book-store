@@ -41,17 +41,19 @@
             <tr th:id="${product.id}" th:each="product, state : ${products}">
                 <th scope="row" th:utext="${state.count}"></th>
                 <td th:utext="${product.name}"></td>
-                <td th:utext="${product.cost}"></td>
-                <td th:utext="${product.discountPercent}"></td>
+                <td th:utext="${#numbers.formatDecimal(product.cost, 2, 0, 'DEFAULT')} + đ"></td>
+                <td th:utext="${#numbers.formatDecimal(product.discountPercent, 1, 0)} + '%'"></td>
                 <td th:utext="${product.enabled}"></td>
                 <td th:utext="${product.inStock}"></td>
                 <td th:utext="${product.description}"></td>
-                <td><img width="100" height="100" alt="image" th:src="@{'/product-images/' + ${product.image}}"></td>
+                <td>
+                    <img width="50" height="50" th:unless="${product.image eq ''}" th:src="@{'/product-images/' + ${product.image}}" alt="">
+                    <img width="50" height="50" th:if="${product.image eq ''}" th:src="@{/site-logo/no-image.jpg}" alt="">
+                </td>
                 <td th:utext="${product.quantity}"></td>
-                <td th:utext="${product.price}"></td>
-                <td th:each="category:${product.category}" >
-                    <div th:utext="${category.name}">
-                    </div>
+                <td th:utext="${#numbers.formatDecimal(product.price, 2, 0)} + đ"></td>
+                <td>
+                    <div th:each="category:${product.category}" th:utext="${category.name}"></div>
                 </td>
                 <td th:utext="${product.publisher.name}"></td>
                 <td>
@@ -80,7 +82,7 @@
 <!--            </th:block>-->
             <th:block th:if="${products.totalPages <= 5}">
                 <li th:each="pageNumber : ${pageNumbers}" class="page-item" th:classappend="${pageNumber == products.number + 1 ? 'active' : ''}">
-                    <a class="page-link" th:href="@{/admin/product(page=${pageNumber}, keyword=${keyword})}" th:text="${pageNumber}"></a>
+                    <a class="page-link" th:href="@{/admin/product(page=${pageNumber}, keyword=${keyword})}" th:text="${pageNumber}" th:re></a>
                 </li>
             </th:block>
 

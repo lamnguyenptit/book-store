@@ -6,10 +6,9 @@ import com.example.login.error.UserNotFoundException;
 import com.example.login.export.CartCsvExporter;
 import com.example.login.model.*;
 import com.example.login.model.dto.CartAndProductDto;
-import com.example.login.model.dto.CartDTO;
+import com.example.login.model.dto.CarDto;
 import com.example.login.model.dto.ProductDto;
 import com.example.login.model.dto.UserCartDto;
-import com.example.login.repository.CartRepository;
 import com.example.login.service.ProductService;
 import com.example.login.service.ShoppingCartService;
 import com.example.login.service.UserService;
@@ -17,18 +16,13 @@ import com.example.login.service.impl.ShoppingCartServiceImpl;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.security.authentication.RememberMeAuthenticationToken;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -37,9 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -478,6 +469,16 @@ public class ShoppingCartController {
                                           BindingResult bindingResult, HttpServletRequest request) throws MessagingException, UnsupportedEncodingException {
         if(bindingResult.hasErrors())
             return "cart/fill-information";
+
+        try{
+            Integer.parseInt(anonymousForm.getPhone());
+        }catch (NumberFormatException e){
+            return "cart/fill-information";
+        }
+
+        if(Integer.parseInt(anonymousForm.getPhone()) <0 )
+            return "cart/fill-information";
+
         Map<ProductDto, Integer> cartSessions = (Map<ProductDto, Integer>) request.getSession().getAttribute("CARTS_SESSION");
         if(cartSessions == null || cartSessions.size() == 0)
             return "redirect:/cartAnonymous";
@@ -570,7 +571,7 @@ public class ShoppingCartController {
     }
 
     public void sendEmailVerityCheckOut(HttpServletRequest request, User user, int cartId) throws MessagingException, UnsupportedEncodingException {
-        CartDTO cart = shoppingCartService.getCartDtoById(cartId);
+        CarDto cart = shoppingCartService.getCartDtoById(cartId);
         List<CartAndProductDto> cartAndProductList = shoppingCartService.getCartAndProductsDetail(cartId);
 
         String toAddress = user.getEmail();
@@ -595,8 +596,8 @@ public class ShoppingCartController {
 
         String second_content = "";
         for(int i =0; i<numberOfProduct; i++){
-            second_content += "<b>Sản phẩm: </b>"+"<a href=" + siteURL+ "/p/" + cartAndProductList.get(i).getProductDto().getId() + ">"
-                    + cartAndProductList.get(i).getProductDto().getName()+"</a>";
+            second_content += "<b>Sản phẩm: </b>"+"<a href=" + siteURL+ "/p/" + cartAndProductList.get(i).getProduct().getId() + ">"
+                    + cartAndProductList.get(i).getProduct().getName()+"</a>";
             second_content += " <b>Số lượng: </b>" + cartAndProductList.get(i).getQuantity();
             second_content += " <b>Thành tiền: </b>"+ (int)cartAndProductList.get(i).getSubTotal() +"<br>";
 
@@ -672,8 +673,8 @@ public class ShoppingCartController {
            Boolean checkNullPurchaseOrder = true;
 
 
-           Page<CartDTO> page = shoppingCartService.listCartCheckout(user.getId(), currentPage, sortField, sortDir);
-           List<CartDTO> listCartPurchase = page.getContent();
+           Page<CarDto> page = shoppingCartService.listCartCheckout(user.getId(), currentPage, sortField, sortDir);
+           List<CarDto> listCartPurchase = page.getContent();
 
            if(listCartPurchase == null){
                model.addAttribute("checkNullPurchaseOrder", checkNullPurchaseOrder);
@@ -713,7 +714,7 @@ public class ShoppingCartController {
     public void exportCartToCsv(HttpServletResponse response, HttpServletRequest request){
        try{
            User user = getAuthenticatedUser(request);
-           List<CartDTO> cartDTOList = shoppingCartService.listCartDtoToExport(user.getId());
+           List<CarDto> cartDTOList = shoppingCartService.listCartDtoToExport(user.getId());
 
            CartCsvExporter cartCsvExporter = new CartCsvExporter();
            cartCsvExporter.export(cartDTOList, response);

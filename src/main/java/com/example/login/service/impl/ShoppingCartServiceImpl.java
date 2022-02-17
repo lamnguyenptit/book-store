@@ -1,18 +1,22 @@
 package com.example.login.service.impl;
 
 import com.example.login.error.ProductNotFoundException;
-import com.example.login.error.ShoppingCartException;
-import com.example.login.model.*;
+import com.example.login.model.Cart;
+import com.example.login.model.CartAndProduct;
+import com.example.login.model.Product;
+import com.example.login.model.User;
 import com.example.login.model.dto.CartAndProductDto;
-import com.example.login.model.dto.CartDTO;
+import com.example.login.model.dto.CarDto;
 import com.example.login.model.dto.ProductDto;
+import com.example.login.model.dto.UserDto;
 import com.example.login.model.dto.UserCartDto;
 import com.example.login.repository.CartProductRepository;
 import com.example.login.repository.CartRepository;
 import com.example.login.repository.ProductRepository;
 import com.example.login.repository.UserRepository;
+import com.example.login.service.CartAndProductService;
 import com.example.login.service.ShoppingCartService;
-import net.bytebuddy.utility.RandomString;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -20,6 +24,9 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Service
 @Transactional
@@ -35,6 +42,9 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Autowired
     private UserRepository userRepository;
 
+
+    @Autowired
+    private CartAndProductService cartAndProductService;
 
     @Override
     public Cart getCartByUser(Integer userId) {
@@ -164,17 +174,17 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
-    public Page<CartDTO> listCartCheckout(int userId, int pageNum, String sortField, String sortDir) {
+    public Page<CarDto> listCartCheckout(int userId, int pageNum, String sortField, String sortDir) {
 
         Sort sort = Sort.by(sortField);
         sort = sortDir.equals("asc") ? sort.ascending() : sort.descending();
         Pageable pageable = PageRequest.of(pageNum - 1, PRODUCT_PER_PAGE, sort);
 
         List<Cart> listCartPurchase = cartRepository.listCartPurchase(userId);
-        List<CartDTO> cartDTOList = listCartPurchase.stream().map(this::convertToCartDto).collect(Collectors.toList());
-        Comparator<CartDTO> compareByField = new Comparator<CartDTO>() {
+        List<CarDto> carDtoList = listCartPurchase.stream().map(this::convertToCartDto).collect(Collectors.toList());
+        Comparator<CarDto> compareByField = new Comparator<CarDto>() {
             @Override
-            public int compare(CartDTO o1, CartDTO o2) {
+            public int compare(CarDto o1, CarDto o2) {
                 switch (sortField){
                     case "id": return o1.getId().compareTo(o2.getId());
                     case "checkoutDate": return o1.getCheckoutDate().compareTo(o2.getCheckoutDate());
@@ -185,23 +195,23 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         };
 
         if(sortDir.equals("asc"))
-            Collections.sort(cartDTOList, compareByField);
+            Collections.sort(carDtoList, compareByField);
         else
-            Collections.sort(cartDTOList, compareByField.reversed());
+            Collections.sort(carDtoList, compareByField.reversed());
 
         final int start = (int) pageable.getOffset();
-        final int end = Math.min((start + pageable.getPageSize()), cartDTOList.size());
+        final int end = Math.min((start + pageable.getPageSize()), carDtoList.size());
 
-        Page<CartDTO> listPage = new PageImpl<>(cartDTOList.subList(start,end), pageable, cartDTOList.size());
+        Page<CarDto> listPage = new PageImpl<>(carDtoList.subList(start,end), pageable, carDtoList.size());
 
         return listPage;
     }
 
-    public CartDTO convertToCartDto(Cart cart){
-        CartDTO cartDTO = new CartDTO();
-        cartDTO.setId(cart.getId());
-        cartDTO.setCartAndProductDtoList(convertToCartAndProductDtoList(cart.getCartAssoc()));
-        return cartDTO;
+    public CarDto convertToCartDto(Cart cart){
+        CarDto carDto = new CarDto();
+        carDto.setId(cart.getId());
+        carDto.setCartAndProducts(convertToCartAndProductDtoList(cart.getCartAssoc()));
+        return carDto;
     }
 
     public List<CartAndProductDto> convertToCartAndProductDtoList(List<CartAndProduct> cartAndProductList){
@@ -212,7 +222,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     public CartAndProductDto convertToCartAndProductDto(CartAndProduct item){
         CartAndProductDto dto = new CartAndProductDto();
-        dto.setProductDto(convertToProductDto(item.getProduct()));
+        dto.setProduct(convertToProductDto(item.getProduct()));
         dto.setCheckoutDate(item.getCheckoutDate());
         dto.setSubTotal(item.getSubTotal());
         dto.setQuantity(item.getQuantity());
@@ -289,6 +299,75 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
+    public List<CarDto> findAll() {
+        return convertToDtos(cartRepository.findAll());
+    }
+
+    @Override
+    public CarDto findById(int id) {
+        return convertToDto(cartRepository.findById(id).orElse(null));
+    }
+
+    @Override
+    public void updateOrder(CarDto carDto) {
+        Cart cart = cartRepository.findById(carDto.getId()).orElse(null);
+        if (cart == null)
+            return;
+        cart.setName(carDto.getName());
+        cart.setAddress(carDto.getAddress());
+        cart.setPhone(carDto.getPhone());
+        if (carDto.getCartAndProducts().isEmpty() || carDto.getCartAndProducts() == null)
+            cart.setCartAssoc(null);
+        else {
+            List<CartAndProduct> cartAndProducts = new ArrayList<>();
+            carDto.getCartAndProducts().forEach(cartAndProductDto -> {
+                CartAndProduct cartAndProduct = cartAndProductService.findById(cartAndProductDto.getId());
+                if (cartAndProduct == null)
+                    return;
+                cartAndProduct.setQuantity(cartAndProductDto.getQuantity());
+                cartAndProducts.add(cartAndProduct);
+            });
+            cart.getCartAssoc().clear();
+            cartAndProducts.forEach(cart.getCartAssoc()::add);
+        }
+        cartRepository.saveAndFlush(cart);
+    }
+
+    @Override
+    public void deleteById(int id) {
+        cartRepository.deleteById(id);
+    }
+
+    private CarDto convertToDto(Cart cart){
+        if (cart == null)
+            return null;
+        CarDto carDto = new CarDto();
+        BeanUtils.copyProperties(cart, carDto);
+
+        UserDto userDto = new UserDto();
+        BeanUtils.copyProperties(cart.getUser(), userDto);
+        carDto.setUser(userDto);
+
+        List<CartAndProductDto> cartAndProductDtos = new ArrayList<>();
+        cart.getCartAssoc().forEach(cartAndProduct -> {
+            CartAndProductDto cartAndProductDto = new CartAndProductDto();
+            BeanUtils.copyProperties(cartAndProduct, cartAndProductDto);
+            ProductDto productDto = new ProductDto();
+            BeanUtils.copyProperties(cartAndProduct.getProduct(), productDto);
+            cartAndProductDto.setProduct(productDto);
+            cartAndProductDtos.add(cartAndProductDto);
+        });
+        carDto.setCartAndProducts(cartAndProductDtos);
+        return carDto;
+    }
+
+    private List<CarDto> convertToDtos(List<Cart> carts) {
+        if (carts == null)
+            return null;
+        return carts.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    @Override
     public UserCartDto fakeUserCart(User user, int cartId) {
         UserCartDto userCartDto = new UserCartDto();
         userCartDto.setName(user.getName());
@@ -297,9 +376,9 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
         Cart cart = cartRepository.getById(cartId);
         userCartDto.setCartId(cartId);
-        CartDTO cartDTO = convertToCartDto(cart);
-        userCartDto.setTotalMoney(cartDTO.getTotalMoney());
-        userCartDto.setCheckoutDate(cartDTO.getCheckoutDate());
+        CarDto carDto = convertToCartDto(cart);
+        userCartDto.setTotalMoney(carDto.getTotalMoney());
+        userCartDto.setCheckoutDate(carDto.getCheckoutDate());
         userCartDto.setPhone(user.getPhone());
         userCartDto.setAddress(user.getAddress());
         return userCartDto;
@@ -345,7 +424,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
-    public CartDTO getCartDtoById(int cartId) {
+    public CarDto getCartDtoById(int cartId) {
         return convertToCartDto( cartRepository.getById(cartId));
     }
 
@@ -373,9 +452,9 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
-    public List<CartDTO> listCartDtoToExport(int userId) {
+    public List<CarDto> listCartDtoToExport(int userId) {
         List<Cart> listCartPurchase = cartRepository.listCartPurchase(userId);
-        List<CartDTO> cartDTOList = listCartPurchase.stream().map(this::convertToCartDto).collect(Collectors.toList());
+        List<CarDto> cartDTOList = listCartPurchase.stream().map(this::convertToCartDto).collect(Collectors.toList());
 
         return cartDTOList;
     }

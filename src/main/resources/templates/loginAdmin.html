@@ -14,7 +14,7 @@
   <div class="border border-secondary rounded p-3" style="max-width: 400px; margin: 0 auto;">
     <form class="form-signin" method="post" th:action="@{'/admin/login'}">
       <div th:if="${param.error}" class="alert alert-danger">
-        Invalid email or password.
+        Invalid username or password.
       </div>
       <div th:if="${param.logout}" class="alert alert-success">
         You have been logged out.
@@ -31,7 +31,7 @@
         <input type="password" name="password" class="form-control" placeholder="Password" required>
       </p>
       <div style="text-align: center">
-        <input class="btn btn-primary btn-block form-control" type="submit">Login</input>
+        <input class="btn btn-primary btn-block form-control" type="submit" value="Login">
       </div>
       <br>
     </form>

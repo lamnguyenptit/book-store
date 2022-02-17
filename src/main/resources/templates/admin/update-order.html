@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>List product</title>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="shortcut icon" href="#">
+</head>
+<body>
+<div th:replace="admin/fragment :: header_menu"></div>
+<h1 style="text-align: center">Update order</h1>
+<div class="container w-75">
+    <form class="information" method="post" th:object="${cart}" th:action="@{/admin/update-order}">
+        <div class="row mb-2">
+            <strong class="col-sm-1 col-form-label">ID</strong>
+            <div class="col-sm-3">
+                <input type="text" class="form-control" th:field="*{id}" readonly>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <strong class="col-sm-1 col-form-label">Name</strong>
+            <div class="col-sm-3">
+                <input type="text" class="form-control" th:field="*{name}" required th:attrappend="readonly=*{statusPayment.equals('YES')} ? 'true'">
+            </div>
+        </div>
+        <div class="row mb-2">
+            <strong class="col-sm-1 col-form-label">Address</strong>
+            <div class="col-sm-3">
+                <input type="text" class="form-control" th:field="*{address}" required th:attrappend="readonly=*{statusPayment.equals('YES')} ? 'true'">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <strong class="col-sm-1 col-form-label">Phone</strong>
+            <div class="col-sm-3">
+                <input type="text" class="form-control" th:field="*{phone}" required th:attrappend="readonly=*{statusPayment.equals('YES')} ? 'true'">
+            </div>
+        </div>
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Image</th>
+                <th>Name of product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:id="${item.id}" th:each="item, index : ${cart.cartAndProducts}">
+                <th th:utext="${item.product.id}"></th>
+                <td><img width="50" height="50" th:src="@{'/product-images/' + ${item.product.image}}" alt=""></td>
+                <td th:utext="${item.product.name}"></td>
+                <td>
+                    <input type="hidden" th:value="${item.id}" th:field="*{cartAndProducts[__${index.index}__].id}">
+                    <input class="form-control w-25 m-0 quantity" type="number" min="1" th:value="${item.quantity}" th:field="*{cartAndProducts[__${index.index}__].quantity}" onchange="changeTotalCost()" th:attrappend="readonly=*{statusPayment.equals('YES')} ? 'true'">
+                    <span th:if="${#fields.hasErrors('cartAndProducts[__${index.index}__].quantity')}" th:errors="*{cartAndProducts[__${index.index}__].quantity}" class="text-danger"></span>
+                </td>
+                <td th:class="price" th:value="${item.product.price}" th:utext="${item.product.price}"></td>
+                <td>
+                    <input type="button" th:name="${item.id}" class="btn btn-danger" value="Delete" onclick="deleteItemViaAjax(this)" th:classappend="*{statusPayment.equals('YES')} ? 'disabled'">
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <h2 class="mb-3" id="totalCost" style="text-align: right"></h2>
+        <div><input class="btn btn-primary" type="submit" value="Save" th:classappend="*{statusPayment.equals('YES')} ? 'disabled'"></div>
+        <br>
+        <a class="btn btn-primary" th:href="@{/admin/list-order}">Back</a>
+    </form>
+    <div th:replace="admin/fragment :: footer_menu"></div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        changeTotalCost()
+    })
+
+    function changeTotalCost() {
+        let quantity = document.getElementsByClassName('quantity')
+        let price = document.getElementsByClassName('price')
+        let totalCost = 0
+        for (let i = 0; i < quantity.length; i++) {
+            if (quantity[i].value < 1)
+                quantity[i].value = 1
+            totalCost += quantity[i].value * price[i].innerHTML
+        }
+        $('#totalCost').text("Total cost: " + totalCost)
+    }
+
+    function deleteItemViaAjax(e){
+        let id = e.name
+        if (confirm('Do you want to delete this item ?')){
+            $("#"+id).remove()
+            changeTotalCost()
+        }
+        else
+            return false
+    }
+</script>
+</body>
+</html>

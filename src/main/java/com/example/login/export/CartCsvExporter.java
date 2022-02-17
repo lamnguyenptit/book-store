@@ -1,6 +1,6 @@
 package com.example.login.export;
 
-import com.example.login.model.dto.CartDTO;
+import com.example.login.model.dto.CarDto;
 import org.supercsv.io.CsvBeanWriter;
 import org.supercsv.io.ICsvBeanReader;
 import org.supercsv.io.ICsvBeanWriter;
@@ -13,7 +13,7 @@ import java.io.Writer;
 import java.util.List;
 
 public class CartCsvExporter extends AbstractExporter {
-    public void export(List<CartDTO> cartDTOList, HttpServletResponse response) throws IOException{
+    public void export(List<CarDto> cartDTOList, HttpServletResponse response) throws IOException{
 
         super.setResponseHeader(response, "text/csv", ".csv", "giohang_");
 
@@ -27,7 +27,7 @@ public class CartCsvExporter extends AbstractExporter {
 
         csvWriter.writeHeader(csvHeader);
 
-        for(CartDTO cartDTO : cartDTOList){
+        for(CarDto cartDTO : cartDTOList){
 //            cartDTO.setTotalMoney(cartDTO.getTotalMoney());
 //            cartDTO.setCartAndProductDtoList(cartDTO.getCartAndProductDtoList());
             csvWriter.write(cartDTO, fieldMapping);
