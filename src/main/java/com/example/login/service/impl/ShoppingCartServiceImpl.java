@@ -15,6 +15,7 @@ import com.example.login.repository.CartRepository;
 import com.example.login.repository.ProductRepository;
 import com.example.login.repository.UserRepository;
 import com.example.login.service.CartAndProductService;
+import com.example.login.service.EmailService;
 import com.example.login.service.ShoppingCartService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,8 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private CartAndProductService cartAndProductService;
@@ -330,7 +333,9 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             cart.getCartAssoc().clear();
             cartAndProducts.forEach(cart.getCartAssoc()::add);
         }
-        cartRepository.saveAndFlush(cart);
+        Cart cart1 = cartRepository.saveAndFlush(cart);
+        if (cart1.equals(cart))
+            emailService.sendEmailUpdateOrder(cart1.getUser());
     }
 
     @Override
