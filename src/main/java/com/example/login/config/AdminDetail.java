@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 public class AdminDetail implements UserDetails {
-    private User user;
+    private final User user;
 
     public AdminDetail(User user){
         this.user = user;
