@@ -1,5 +1,6 @@
 package com.example.login.controller;
 
+import com.example.login.error.CategoryNotFoundException;
 import com.example.login.error.ProductNotFoundException;
 import com.example.login.model.*;
 import com.example.login.service.CategoryService;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -39,25 +41,35 @@ public class MainController {
 
     @GetMapping("/c/{id}")
     public String getAllProductInCategory(@PathVariable(value = "id") String id,
-                                          Model model){
-        List<Product> listProductByCategory = productService.listProductByCategory(Integer.parseInt(id));
-        model.addAttribute("listProductByCategory", listProductByCategory);
-        return "view-product-by-category";
+                                          Model model, RedirectAttributes redirectAttributes){
+        try{
+            List<Product> listProductByCategory = productService.listProductByCategory(Integer.parseInt(id));
+            model.addAttribute("listProductByCategory", listProductByCategory);
+            return "view-product-by-category";
+        }catch (CategoryNotFoundException cat){
+            redirectAttributes.addFlashAttribute("message", "Không thể tìm thấy danh mục có id"+id);
+            return "redirect:/view";
+        }
     }
 
     @GetMapping("/p/{id}")
     public String getDetailProduct(@PathVariable(value = "id") String productId,
-                                  Model model) throws ProductNotFoundException {
-        Product productDetail = productService.getProduct(Integer.parseInt(productId));
-        List<Product> listProductSameCategory = productService.listProductSameCategory(Integer.parseInt(productId));
-        Set<Category> listAllCategory = productDetail.getCategories();
-        List<Product> listProductSameMoney = productService.listProductSameMoney(Integer.parseInt(productId));
+                                   Model model, RedirectAttributes redirectAttributes) {
+        try{
+            Product productDetail = productService.getProduct(Integer.parseInt(productId));
+            List<Product> listProductSameCategory = productService.listProductSameCategory(Integer.parseInt(productId));
+            Set<Category> listAllCategory = productDetail.getCategories();
+            List<Product> listProductSameMoney = productService.listProductSameMoney(Integer.parseInt(productId));
 
-        model.addAttribute("listProductSameMoney", listProductSameMoney);
-        model.addAttribute("listProductSameCategory", listProductSameCategory);
-        model.addAttribute("productDetail", productDetail);
-        model.addAttribute("listAllCategory", listAllCategory);
-        return "view-detail-product";
+            model.addAttribute("listProductSameMoney", listProductSameMoney);
+            model.addAttribute("listProductSameCategory", listProductSameCategory);
+            model.addAttribute("productDetail", productDetail);
+            model.addAttribute("listAllCategory", listAllCategory);
+            return "view-detail-product";
+        }catch (ProductNotFoundException pr){
+            redirectAttributes.addFlashAttribute("message", "Không thể tìm thấy sản phẩm có id"+productId);
+            return "redirect:/view";
+        }
 
 //        Product productDetail = productService.getProduct(productId);
 //        List<Product> listProductSameCategory = productService.listProductSameCategory(Integer.parseInt(productId));

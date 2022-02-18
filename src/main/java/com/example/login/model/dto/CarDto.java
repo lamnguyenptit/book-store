@@ -61,7 +61,7 @@ public class CarDto implements Serializable {
     public String getProductNamesToExport(){
         String productNames = "";
         for(CartAndProductDto cp : cartAndProducts){
-            productNames += cp.getProduct().getName();
+            productNames += cp.getProduct().getName()+", ";
         }
         return productNames;
     }

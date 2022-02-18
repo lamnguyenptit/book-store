@@ -4,6 +4,7 @@ import com.example.login.error.ProductNotFoundException;
 import com.example.login.error.ShoppingCartException;
 import com.example.login.error.UserNotFoundException;
 import com.example.login.export.CartCsvExporter;
+import com.example.login.export.CartPdfExporter;
 import com.example.login.model.*;
 import com.example.login.model.dto.CartAndProductDto;
 import com.example.login.model.dto.CarDto;
@@ -23,6 +24,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -51,57 +53,65 @@ public class ShoppingCartController {
     private JavaMailSender emailSender;
 
     @GetMapping("/cart")
-    public String viewFirstCart(Model model, HttpServletRequest request) throws UserNotFoundException {
-         return viewCart(model, request, "1", "id", "asc");
+    public String viewFirstCart(Model model, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+         return viewCart(model, request, redirectAttributes,"1", "id", "asc");
     }
 
     @GetMapping("/cart/page/{pageNum}")
-    public String viewCart(Model model, HttpServletRequest request,
-                           @PathVariable("pageNum") String pageNum, String sortField, String sortDir) throws UserNotFoundException {
-        User user = getAuthenticatedUser(request);
-        Cart cart = shoppingCartService.getCartByUser(user.getId());
-        Boolean checkNullCart = true;
+    public String viewCart(Model model, HttpServletRequest request, RedirectAttributes redirectAttributes,
+                           @PathVariable("pageNum") String pageNum, String sortField, String sortDir) {
+        try{
+            User user = getAuthenticatedUser(request);
+            Cart cart = shoppingCartService.getCartByUser(user.getId());
+            Boolean checkNullCart = true;
 
-        if(cart == null){
+            if(cart == null){
+                model.addAttribute("checkNullCart", checkNullCart);
+                return "shopping-cart";
+            }
+
+            int currentPage = Integer.parseInt(pageNum);
+            Page<CartAndProduct> page = shoppingCartService.listProductByUserCart(cart.getId(), currentPage, sortField, sortDir);
+            List<CartAndProduct> listProductByUserCart = page.getContent();
+
+
+            Integer totalItem = listProductByUserCart.size();
+
+            if(totalItem <= 0 ){
+                model.addAttribute("checkNullCart", checkNullCart);
+                return "shopping-cart";
+            }
+
+            Float totalMoney = 0.0F;
+
+            for(CartAndProduct products : listProductByUserCart){
+                totalMoney += products.getSubTotal();
+            }
+            checkNullCart = false;
+
+            model.addAttribute("totalItems", page.getTotalElements());
+            model.addAttribute("totalPages", page.getTotalPages());
+            model.addAttribute("currentPage", currentPage);
+            model.addAttribute("sortField", sortField);
+            model.addAttribute("sortDir", sortDir);
             model.addAttribute("checkNullCart", checkNullCart);
+            model.addAttribute("listProductByUserCart", listProductByUserCart);
+            model.addAttribute("totalMoney", totalMoney);
+            model.addAttribute("keyword", null);
+            model.addAttribute("moduleURL", "/cart");
+            model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+            long startCount = (currentPage - 1) * ShoppingCartServiceImpl.PRODUCT_PER_PAGE;
+            long endCount = Math.min(startCount + ShoppingCartServiceImpl.PRODUCT_PER_PAGE, page.getTotalPages());
+            model.addAttribute("startCount", startCount);
+            model.addAttribute("endCount", endCount);
             return "shopping-cart";
+        }catch (UserNotFoundException us){
+            redirectAttributes.addFlashAttribute("message", "Bạn cần phải đăng nhập");
+            return "redirect:/view";
+        }catch (ProductNotFoundException pr){
+            redirectAttributes.addFlashAttribute("message", "Có sản phẩm đã bị xóa hoặc không tồn tại");
+            return "redirect:/view";
         }
-
-        int currentPage = Integer.parseInt(pageNum);
-        Page<CartAndProduct> page = shoppingCartService.listProductByUserCart(cart.getId(), currentPage, sortField, sortDir);
-        List<CartAndProduct> listProductByUserCart = page.getContent();
-
-
-        Integer totalItem = listProductByUserCart.size();
-
-        if(totalItem <= 0 ){
-            model.addAttribute("checkNullCart", checkNullCart);
-            return "shopping-cart";
-        }
-
-        Float totalMoney = 0.0F;
-
-        for(CartAndProduct products : listProductByUserCart){
-            totalMoney += products.getSubTotal();
-        }
-        checkNullCart = false;
-
-        model.addAttribute("totalItems", page.getTotalElements());
-        model.addAttribute("totalPages", page.getTotalPages());
-        model.addAttribute("currentPage", currentPage);
-        model.addAttribute("sortField", sortField);
-        model.addAttribute("sortDir", sortDir);
-        model.addAttribute("checkNullCart", checkNullCart);
-        model.addAttribute("listProductByUserCart", listProductByUserCart);
-        model.addAttribute("totalMoney", totalMoney);
-        model.addAttribute("keyword", null);
-        model.addAttribute("moduleURL", "/cart");
-        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
-        long startCount = (currentPage - 1) * ShoppingCartServiceImpl.PRODUCT_PER_PAGE;
-        long endCount = Math.min(startCount + ShoppingCartServiceImpl.PRODUCT_PER_PAGE, page.getTotalPages());
-        model.addAttribute("startCount", startCount);
-        model.addAttribute("endCount", endCount);
-        return "shopping-cart";
     }
 
 
@@ -171,38 +181,47 @@ public class ShoppingCartController {
 
 
     @GetMapping("/cartAnonymous")
-    public String viewCartAnonymous(Model model, HttpServletRequest request, HttpSession session) throws ProductNotFoundException {
-        Boolean checkNullCart = true;
+    public String viewCartAnonymous(Model model, HttpServletRequest request,
+                                    HttpSession session, RedirectAttributes redirectAttributes){
+        try{
+            User user = getAuthenticatedUser(request);
+        }catch (UserNotFoundException ex) {
+            Boolean checkNullCart = true;
 
-        Map<ProductDto, Integer> cartsSession = (Map<ProductDto, Integer>)session.getAttribute("CARTS_SESSION");
+            Map<ProductDto, Integer> cartsSession = (Map<ProductDto, Integer>) session.getAttribute("CARTS_SESSION");
 
-        if(cartsSession == null || cartsSession.size() == 0){
+            if (cartsSession == null || cartsSession.size() == 0) {
+                model.addAttribute("checkNullCart", checkNullCart);
+                return "shopping-cartAnonymous";
+            }
+
+            Float totalMoney = 0.0F;
+            for (Map.Entry<ProductDto, Integer> element : cartsSession.entrySet()) {
+                if(productService.checkProductIsDelete(element.getKey().getId())){
+                    redirectAttributes.addFlashAttribute("message", "Có sản phẩm đã bị xóa hoặc không tồn tại. Mua lại");
+                    return "redirect:/view";
+                }
+
+                ProductDto productDto = element.getKey();
+                productDto.setOrderQuantity(element.getValue());
+                totalMoney += productDto.getSubTotal();
+                cartsSession.put(productDto, element.getValue());
+            }
+
+            request.getSession().setAttribute("CARTS_SESSION", cartsSession);
+
+            checkNullCart = false;
+            model.addAttribute("totalMoney", totalMoney);
             model.addAttribute("checkNullCart", checkNullCart);
-        return "shopping-cartAnonymous";
+            model.addAttribute("cartsSession", cartsSession);
+
+            return "shopping-cartAnonymous";
         }
 
-        Float totalMoney = 0.0F;
-        for(Map.Entry<ProductDto, Integer> element : cartsSession.entrySet()){
-//            Product product = productService.getProduct(element.getKey().getId());
-//            ProductDto productDto = productService.convertToProductDto(product);
-//
-            ProductDto productDto = element.getKey();
-            productDto.setOrderQuantity(element.getValue());
-            totalMoney += productDto.getSubTotal();
-            cartsSession.put(productDto, element.getValue());
-        }
-
-        request.getSession().setAttribute("CARTS_SESSION", cartsSession);
-
-        checkNullCart = false;
-        model.addAttribute("totalMoney", totalMoney);
-        model.addAttribute("checkNullCart", checkNullCart);
-        model.addAttribute("cartsSession", cartsSession);
-
-        return "shopping-cartAnonymous";
-
+        return "redirect:/cart";
 //        return viewCartAnonymousPage(model, request, "1", "id", "asc");
     }
+
 
     @GetMapping("/cartAnonymous/page/{pageNum}")
     public String viewCartAnonymousPage(Model model, HttpServletRequest request,
@@ -300,8 +319,6 @@ public class ShoppingCartController {
 
         Integer updateQuantity = numberProductAnonymous + quantityVal;
         productDto.setOrderQuantity(updateQuantity);
-        System.out.printf("\norder:  "+ productDto.getOrderQuantity());
-        System.out.printf("\nsdjfkdf: "+ productDto.getSubTotal());
 
         cartsSession.put(productDto, updateQuantity);
 
@@ -457,27 +474,38 @@ public class ShoppingCartController {
     }
 
     @GetMapping("/fillInformation")
-    public String fillInformation(Model model){
-        AnonymousForm anonymousForm = new AnonymousForm();
-        model.addAttribute("anonymousForm", anonymousForm);
+    public String fillInformation(Model model, HttpServletRequest request, RedirectAttributes redirectAttributes){
+        try{
+            User user = getAuthenticatedUser(request);
 
-        return "cart/fill-information";
+        }catch(UserNotFoundException ex){
+            AnonymousForm anonymousForm = new AnonymousForm();
+            model.addAttribute("anonymousForm", anonymousForm);
+//        model.addAttribute("message", message);
+
+            return "cart/fill-information";
+        }
+        redirectAttributes.addFlashAttribute("message", "Bạn không có quyền truy cập vào trang này. Hãy mua hàng :-))");
+        return "redirect:/view";
     }
 
     @PostMapping("/fillInformation")
     public String CompleteFillInformation(@Validated @ModelAttribute("anonymousForm") AnonymousForm anonymousForm,
-                                          BindingResult bindingResult, HttpServletRequest request) throws MessagingException, UnsupportedEncodingException {
+                                          BindingResult bindingResult, HttpServletRequest request,
+                                          RedirectAttributes redirectAttributes, Model model){
         if(bindingResult.hasErrors())
             return "cart/fill-information";
 
         try{
             Integer.parseInt(anonymousForm.getPhone());
         }catch (NumberFormatException e){
-            return "cart/fill-information";
+            redirectAttributes.addFlashAttribute("message", "Số điện thoại nhập không đúng định dạng. Nhập lại");
+            return "redirect:/fillInformation";
         }
 
-        if(Integer.parseInt(anonymousForm.getPhone()) <0 )
-            return "cart/fill-information";
+        if(Integer.parseInt(anonymousForm.getPhone()) <0 ){
+            redirectAttributes.addFlashAttribute("message", "Số điện thoại nhập cần sai!");
+            return "redirect:/fillInformation";}
 
         Map<ProductDto, Integer> cartSessions = (Map<ProductDto, Integer>) request.getSession().getAttribute("CARTS_SESSION");
         if(cartSessions == null || cartSessions.size() == 0)
@@ -723,6 +751,21 @@ public class ShoppingCartController {
        } catch (IOException e) {
            e.printStackTrace();
        }
+    }
+
+    @GetMapping("/cart/export/pdf")
+    public void exportCartToPdf(HttpServletResponse response, HttpServletRequest request){
+        try{
+            User user = getAuthenticatedUser(request);
+            List<CarDto> cartDTOList = shoppingCartService.listCartDtoToExport(user.getId());
+
+            CartPdfExporter cartPdfExporter = new CartPdfExporter();
+            cartPdfExporter.export(cartDTOList, response);
+        }catch (UserNotFoundException ex){
+            ex.getMessage();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @GetMapping("/purchase/order/{cartId}")

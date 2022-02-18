@@ -29,7 +29,6 @@ public class CartAndProductDto implements Serializable {
     private int quantity;
     private Date checkoutDate;
     private float subTotal;
-    private String image;
 
     @Override
     public String toString() {

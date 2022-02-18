@@ -1,5 +1,6 @@
 package com.example.login.service.impl;
 
+import com.example.login.error.CategoryNotFoundException;
 import com.example.login.error.ProductNotFoundException;
 import com.example.login.model.Category;
 import com.example.login.model.Product;
@@ -43,8 +44,14 @@ public class ProductServiceImpl implements ProductService {
     private CategoryRepository categoryRepository;
 
     @Override
-    public List<Product> listProductByCategory(Integer catId) {
-        Pageable pageable = PageRequest.of(0, 10);
+    public List<Product> listProductByCategory(Integer catId) throws CategoryNotFoundException {
+//        try {
+//            Category category = categoryRepository.findById(catId).get();
+//        }catch (NoSuchElementException ns){
+//            throw new CategoryNotFoundException();
+//        }
+        categoryRepository.findById(catId).orElseThrow(() -> new CategoryNotFoundException());
+
         List<Integer> listAllProductIdByCategory = repo.getAllIdProductCategories(catId);
         List<Product> listAllProduct = new ArrayList<>();
         for (Integer productId :
