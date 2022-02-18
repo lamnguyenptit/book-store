@@ -56,6 +56,10 @@ public class UserDto {
     @Enumerated(EnumType.STRING)
     private Provider provider;
 
+    public String getProviderType(){
+        return this.provider.name();
+    }
+
     private boolean locked;
     private boolean enabled;
     private ConfirmationTokenDto confirmationTokenDto;

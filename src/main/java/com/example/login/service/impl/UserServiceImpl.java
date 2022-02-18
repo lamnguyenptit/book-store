@@ -284,6 +284,7 @@ public class UserServiceImpl implements UserService {
             }
             userDto.setDegrees(degreeDtos);
         }
+        userDto.setProvider(user.getProvider());
         return userDto;
     }
 
