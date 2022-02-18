@@ -1,5 +1,6 @@
 package com.example.login.service;
 
+import com.example.login.error.CategoryNotFoundException;
 import com.example.login.error.ProductNotFoundException;
 import com.example.login.model.Product;
 import com.example.login.model.dto.ProductDto;
@@ -11,7 +12,7 @@ import java.util.Optional;
 
 public interface ProductService {
 
-    List<Product> listProductByCategory(Integer catId);
+    List<Product> listProductByCategory(Integer catId) throws CategoryNotFoundException;
 
     Product getProduct(int id) throws ProductNotFoundException;
 

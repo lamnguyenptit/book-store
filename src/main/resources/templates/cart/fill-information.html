@@ -22,6 +22,9 @@
     <h1 style="text-align: center">Thông tin khách hàng</h1>
     <div class="border border-secondary rounded p-3" style="max-width: 900px; margin: 0 auto;">
         <form class="information" method="post" th:object="${anonymousForm}" th:action="@{/fillInformation}">
+            <div th:if="${message != null}"
+                 class="alert alert-success text-center">[[${message}]]
+            </div>
             <div class="mb-3">
                 <span>Tên khách hàng: </span>
                 <input type="text" th:field="*{name}" class="form-control" placeholder="tên">

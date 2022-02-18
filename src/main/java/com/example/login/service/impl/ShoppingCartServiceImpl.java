@@ -55,12 +55,17 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
-    public Page<CartAndProduct> listProductByUserCart(Integer cartId, int currentPage, String fieldName, String sortDir) {
+    public Page<CartAndProduct> listProductByUserCart(Integer cartId, int currentPage, String fieldName, String sortDir) throws ProductNotFoundException {
         Sort sort = Sort.by(fieldName);
         sort = sortDir.equals("asc") ? sort.descending() : sort.ascending();
 
         Pageable pageable = PageRequest.of(currentPage - 1, PRODUCT_PER_PAGE, sort);
         List<CartAndProduct> content =  cartProductRepository.listProductByUserCart(cartId);
+
+        for(CartAndProduct product : content){
+            productRepository.findById(product.getProduct().getId())
+                    .orElseThrow(() -> new ProductNotFoundException());
+        }
 
         Comparator<CartAndProduct> compareByField = new Comparator<CartAndProduct>() {
             @Override

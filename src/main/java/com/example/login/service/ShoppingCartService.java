@@ -18,7 +18,8 @@ public interface ShoppingCartService {
 
     public Cart getCartByUser(Integer userId);
 
-    public Page<CartAndProduct> listProductByUserCart(Integer cartId, int currentPage, String fieldName, String sortDir);
+    public Page<CartAndProduct> listProductByUserCart(Integer cartId, int currentPage, String fieldName, String sortDir) throws ProductNotFoundException;
+    
     public List<CartAndProduct> listProductByUserCart(Integer cartId);
 
     public Integer updateQuantity(Integer userId, Integer productId, Integer quantity) throws ShoppingCartException;

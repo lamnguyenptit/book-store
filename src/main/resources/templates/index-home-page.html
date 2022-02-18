@@ -17,6 +17,9 @@
     <div>
         <h1>Shopping by Categories</h1>
     </div>
+    <div th:if="${message != null}"
+         class="alert alert-success text-center">[[${message}]]
+    </div>
     <div class="row">
         <div class="col-sm-2" th:each="cat : ${listCategories}">
             <div>

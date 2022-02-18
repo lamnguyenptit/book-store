@@ -61,10 +61,10 @@
                     <div class="col-sm-1">
                         <div class="div-count">[[${status.count}]]</div>
                     </div>
-                    <div class="col-sm-3"><img th:src="@{'/product-images/'+${product.productDto.image}}" class="img-fluid" /></div>
+                    <div class="col-sm-3"><img th:src="@{'/product-images/'+${product.product.image}}" class="img-fluid" /></div>
                     <div class="col-sm-8">
                         <div class="text-wrap" style="font-weight: bold; font-size: large">
-                            <a th:href="@{'/p/' + ${product.productDto.id}}">[[${product.productDto.name}]]</a>
+                            <a th:href="@{'/p/' + ${product.product.id}}">[[${product.product.name}]]</a>
                         </div>
 
                         <div>
